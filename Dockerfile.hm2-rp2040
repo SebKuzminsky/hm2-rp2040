@@ -1,0 +1,29 @@
+FROM debian:bookworm
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# don't try to install VSCode
+ARG SKIP_VSCODE=1
+
+# don't try to disable the Raspberry Pi serial console
+ARG SKIP_UART=1
+
+RUN ( \
+    set -e; \
+    apt --quiet update; \
+    apt install --quiet --yes \
+        pkg-config \
+        python3 \
+        sudo \
+        wget \
+    ; \
+    apt clean; \
+)
+
+RUN ( \
+    set -e; \
+    cd /opt; \
+    wget https://raw.githubusercontent.com/raspberrypi/pico-setup/master/pico_setup.sh; \
+    chmod +x pico_setup.sh; \
+    ./pico_setup.sh; \
+)

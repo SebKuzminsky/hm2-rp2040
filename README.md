@@ -45,6 +45,29 @@ This stand-alone USB3-to-GPIF chip (whatever GPIF is) costs $40:
 Examples here: <https://github.com/raspberrypi/pico-examples/>
 
 
+### C SDK builder docker image
+
+In the pico-rp2040-build docker container:
+
+```
+$ cd pico-example
+$ mkdir build
+$ cd build
+$ cmake -DPICO_BOARD=adafruit_feather_rp2040 ..
+$ make -C blink -j7
+```
+
+On the Adafruit Feather RP2040: hold Boot button, click Reset button,
+release Boot button.
+
+On the host:
+```
+$ sudo mount /dev/sda1 /mnt
+$ sudo cp blink/blink.uf2 /mnt
+$ sudo umount /mnt
+```
+
+
 ## PIO
 
 <https://learn.adafruit.com/intro-to-rp2040-pio-with-circuitpython>
