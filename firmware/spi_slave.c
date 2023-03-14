@@ -64,8 +64,8 @@ int main() {
 
     printf("SPI slave example\n");
 
-    // Enable SPI 0 at 1 MHz and connect to GPIOs
-    spi_init(spi_default, 1000 * 1000);
+    // Enable SPI 1 at 10 MHz and connect to GPIOs
+    spi_init(spi_default, 10 * 1000 * 1000);
     spi_set_slave(spi_default, true);
     gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
     gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
