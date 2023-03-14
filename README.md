@@ -20,6 +20,18 @@ $18 from Mouser: <https://www.mouser.com/ProductDetail/WIZnet/W6100-EVB-PICO?qs=
 
 Possibly any RP2040 board might work, as long as the SPI is available?
 
+On a Raspberry Pi 4 running Ubuntu 22.10 (or probably any Debian-based
+RPi with working /dev/spi), install spi-tools and run something like:
+
+`$ echo -en 'ABCD' | sudo spi-pipe --device=/dev/spidev0.0 --speed=$((10*1000*1000)) --blocksize=1 | hd`
+
+The SPI controller in the RP2040 in slave mode tops out around 11 MHz
+(RP2040 Datasheet 2023-03-02, section 4.4.3.4), which is not great.
+
+Sniff & decode SPI with pulseview/sigrok, though my ancient Saleae Logic
+tops out around 8 MHz, so not useful for the 20 MHz that mesaflash uses,
+or the 30+ MHz that hostmot2 likes to use.
+
 
 ## USB3
 
