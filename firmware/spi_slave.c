@@ -29,8 +29,11 @@
 #include "pico/binary_info.h"
 #include "hardware/spi.h"
 
-// #define BUF_LEN         0x100
-#define BUF_LEN         4
+#include "hm2-fw.h"
+
+#define HM2_SPI_CMD_READ  (0xa)
+#define HM2_SPI_CMD_WRITE (0xb)
+
 
 void printbuf(uint8_t buf[], size_t len) {
     int i;
@@ -54,43 +57,93 @@ void printbuf(uint8_t buf[], size_t len) {
 #define PICO_DEFAULT_SPI_CSN_PIN  9  // labeled 9 (white)
 
 
-int main() {
-    // Enable UART so we can print
-    stdio_init_all();
 #if !defined(spi_default) || !defined(PICO_DEFAULT_SPI_SCK_PIN) || !defined(PICO_DEFAULT_SPI_TX_PIN) || !defined(PICO_DEFAULT_SPI_RX_PIN) || !defined(PICO_DEFAULT_SPI_CSN_PIN)
-#warning spi/spi_slave example requires a board with SPI pins
-    puts("Default SPI pins were not defined");
-#else
+#error hm2-fw requires a board with SPI pins
+#endif
 
-    printf("SPI slave example\n");
+#if !defined(PICO_DEFAULT_LED_PIN)
+#error hm2-fw requires a board with an LED pin
+#endif
 
-    // Enable SPI 1 at 10 MHz and connect to GPIOs
+
+int main() {
+    // Enable stdio so we can print log/debug messages.
+    stdio_init_all();
+
+    uint const LED_PIN = PICO_DEFAULT_LED_PIN;
+    gpio_init(LED_PIN);
+    gpio_set_dir(LED_PIN, GPIO_OUT);
+
+    gpio_put(LED_PIN, 1);
+    sleep_ms(200);
+    gpio_put(LED_PIN, 0);
+    sleep_ms(200);
+    gpio_put(LED_PIN, 1);
+    sleep_ms(200);
+    gpio_put(LED_PIN, 0);
+    sleep_ms(200);
+
+    gpio_put(LED_PIN, 1);
+    sleep_ms(200);
+    gpio_put(LED_PIN, 0);
+    sleep_ms(200);
+    gpio_put(LED_PIN, 1);
+    sleep_ms(200);
+    gpio_put(LED_PIN, 0);
+    sleep_ms(200);
+
+    printf("Hostmot2 firwmare starting\n");
+
+    idrom_init();
+
+    // Enable SPI at 10 MHz and connect to GPIOs
     spi_init(spi_default, 10 * 1000 * 1000);
     spi_set_slave(spi_default, true);
     gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
     gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
     gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
     gpio_set_function(PICO_DEFAULT_SPI_CSN_PIN, GPIO_FUNC_SPI);
+
+    // THIS LINE IS ABSOLUTELY KEY. Enables multi-byte transfers with
+    // one CS assert.  See section 4.4.3 of the RP2040 Datasheet.
+    spi_set_format(spi_default, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
+
     // Make the SPI pins available to picotool
     bi_decl(bi_4pins_with_func(PICO_DEFAULT_SPI_RX_PIN, PICO_DEFAULT_SPI_TX_PIN, PICO_DEFAULT_SPI_SCK_PIN, PICO_DEFAULT_SPI_CSN_PIN, GPIO_FUNC_SPI));
 
-    uint8_t out_buf[BUF_LEN], in_buf[BUF_LEN];
-
-    // Initialize output buffer
-    for (size_t i = 0; i < BUF_LEN; ++i) {
-        out_buf[i] = '0' + i;
+    if (spi_is_readable(spi_default)) {
+        printf("draining SPI read queue\n");
+        while (spi_is_readable(spi_default)) {
+            uint8_t garbage;
+            spi_read_blocking(spi_default, 0xAA, &garbage, 1);
+            printbuf(&garbage, 1);
+        }
     }
 
-    printf("SPI slave says: When reading from MOSI, the following buffer will be written to MISO:\n");
-    printbuf(out_buf, BUF_LEN);
-    
-    for (size_t i = 0; ; ++i) {
-        // Write the output buffer to MISO, and at the same time read from MOSI.
-        spi_write_read_blocking(spi_default, out_buf, in_buf, BUF_LEN);
+    // Main loop
+    while (true) {
+        uint8_t cmd_frame[4];
 
-        // Write to stdio whatever came in on the MOSI line.
-        printf("SPI slave says: read page %d from the MOSI line:\n", i);
-        printbuf(in_buf, BUF_LEN);
+        // Read a command frame from the control computer (while writing
+        // some garbage that will be ignored).
+        spi_read_blocking(spi_default, 0x5A, cmd_frame, 4);
+        // printbuf(cmd_frame, 4);
+
+        uint16_t addr = ((uint16_t)cmd_frame[0] << 8) | (cmd_frame[1]);
+        int cmd = 0x0f & (cmd_frame[2] >> 4);
+        bool addr_auto_increment = 0x1 & (cmd_frame[2] >> 3);
+        size_t size = 0x7f & ((((uint16_t)cmd_frame[2] << 8) | (cmd_frame[3])) >> 4);  // `size` is the number of 32-bit words to read or write
+        // printf("cmd frame:\n    addr=0x%04x\n    cmd=0x%1x\n    addr_auto_increment=%d\n    size=%d\n", addr, cmd, addr_auto_increment, size);
+
+        if (cmd == HM2_SPI_CMD_READ) {
+            for (size_t i = 0; i < size; ++i) {
+                // printf("read 4 bytes from 0x%04x\n", addr);
+                uint8_t garbage[4];
+                spi_write_read_blocking(spi_default, &hm2_register_file[addr], (uint8_t*)&garbage, 4);
+                if (addr_auto_increment) {
+                    addr += 4;
+                }
+            }
+        }
     }
-#endif
 }
