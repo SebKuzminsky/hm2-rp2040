@@ -48,7 +48,7 @@ static uint8_t * reg;
 
 
 int idrom_init(void) {
-    reg = hm2_fw_register("idrom", 0x0100, 16, NULL);
+    reg = hm2_fw_register("id", 0x0100, 16, NULL);
     if (reg == NULL) {
         return -1;
     }
@@ -61,5 +61,34 @@ int idrom_init(void) {
     reg[9]  = 'T';
     reg[10] = 'O';
     reg[11] = 'M';
+    ((uint32_t*)reg)[3] = htonl(0x0400);
+
+    reg = hm2_fw_register("idrom", 0x0400, 0x40, NULL);
+    if (reg == NULL) {
+        return -1;
+    }
+    ((uint32_t*)reg)[0] = htonl(2);     // IDROM type
+    ((uint32_t*)reg)[1] = htonl(64);    // offset to Module Descriptors
+    ((uint32_t*)reg)[2] = htonl(512);   // offset to Pin Descriptors
+    reg[12] = '2';
+    reg[13] = 'P';
+    reg[14] = 'R';
+    reg[15] = '*';
+    reg[16] = '*';
+    reg[17] = '0';
+    reg[18] = '4';
+    reg[19] = '0';
+    ((uint32_t*)reg)[5] = htonl(0);   // size of the "fpga"
+    ((uint32_t*)reg)[6] = htonl(56);  // number of pins on the "fpga"
+    ((uint32_t*)reg)[7] = htonl(1);   // number of ioports
+    ((uint32_t*)reg)[8] = htonl(25);  // total number of pins
+    ((uint32_t*)reg)[9] = htonl(25);  // number of pins per ioport
+    ((uint32_t*)reg)[10] = htonl(10*1000*1000);  // ClockLow
+    ((uint32_t*)reg)[11] = htonl(20*1000*1000);  // ClockHigh
+    ((uint32_t*)reg)[12] = htonl(10);  // Instance Stride 0
+    ((uint32_t*)reg)[13] = htonl(20);  // Instance Stride 1
+    ((uint32_t*)reg)[14] = htonl(30);  // Register Stride 0
+    ((uint32_t*)reg)[15] = htonl(40);  // Register Stride 1
+
     return 0;
 }
