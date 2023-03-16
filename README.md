@@ -40,6 +40,8 @@ The RP2040 only has USB 1.1, no possibly low-latency USB 3.  :-(
 This stand-alone USB3-to-GPIF chip (whatever GPIF is) costs $40:
 <https://www.infineon.com/cms/en/product/universal-serial-bus/usb-peripheral-controllers-for-superspeed/ez-usb-fx3-usb-5gbps-peripheral-controller/>
 
+FTDI FT601 costs $10: <https://ftdichip.com/products/ft601q-b/>
+
 <https://github.com/xtoolbox/TeenyUSB>
 
 
