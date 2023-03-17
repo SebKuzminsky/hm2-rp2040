@@ -70,6 +70,10 @@ int main() {
     // Enable stdio so we can print log/debug messages.
     stdio_init_all();
 
+
+    // Blink the LED for a while, so the host has time to notice the USB
+    // serial port and connect to it, so it can see the initialization
+    // log messages...
     uint const LED_PIN = PICO_DEFAULT_LED_PIN;
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
@@ -92,9 +96,13 @@ int main() {
     gpio_put(LED_PIN, 0);
     sleep_ms(200);
 
+
     printf("Hostmot2 firwmare starting\n");
 
     idrom_init();
+
+    printf("Hostmot2 firmware initialized!\n");
+
 
     // Enable SPI at 10 MHz and connect to GPIOs
     spi_init(spi_default, 10 * 1000 * 1000);
