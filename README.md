@@ -28,6 +28,12 @@ RPi with working /dev/spi), install spi-tools and run something like:
 The SPI controller in the RP2040 in slave mode tops out around 11 MHz
 (RP2040 Datasheet 2023-03-02, section 4.4.3.4), which is not great.
 
+The current RP2040 code is too slow to keep up with mesaflash at 1 MHz
+SPI freq.  It's ok at 100 kHz.  SPI itself runs fine up to 10 MHz, but the
+code that feeds the hm2 registers to the SPI transmit queue is too slow.
+Maybe SPI DMA would help?  Certainly going from SPI to Ethernet will
+fix this particular timing problem.
+
 Sniff & decode SPI with pulseview/sigrok, though my ancient Saleae Logic
 tops out around 8 MHz, so not useful for the 20 MHz that mesaflash uses,
 or the 30+ MHz that hostmot2 likes to use.
