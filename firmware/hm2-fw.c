@@ -43,6 +43,6 @@ void hm2_fw_run(void) {
                 hm2_region[i].update();
             }
         }
-        sleep_ms(1);
+        // sleep_ms(1);
     }
 }
