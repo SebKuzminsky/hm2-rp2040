@@ -4,7 +4,7 @@
 #include "hm2-fw.h"
 
 
-hm2_region_t hm2_region[HM2_NUM_REGIONS];
+hm2_region_t hm2_region[HM2_MAX_REGIONS];
 size_t hm2_num_regions;
 
 uint8_t hm2_register_file[2^16];
@@ -17,7 +17,7 @@ uint8_t * hm2_fw_register(
     void (*update)(void)
 ) {
     // Register a handler for a region of the address space.
-    if (hm2_num_regions >= HM2_NUM_REGIONS) {
+    if (hm2_num_regions >= HM2_MAX_REGIONS) {
         printf("Failed to register hm2 region handler, array is full.");
         return NULL;
     }
