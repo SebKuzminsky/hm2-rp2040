@@ -67,23 +67,23 @@ Examples here: <https://github.com/raspberrypi/pico-examples/>
 
 ### C SDK builder docker image
 
-In the pico-rp2040-build docker container:
+In the hm2-rp2040 docker container (with this repo mounted in it):
 
 ```
-$ cd pico-example
 $ mkdir build
 $ cd build
 $ cmake -DPICO_BOARD=adafruit_feather_rp2040 ..
-$ make -C blink -j7
+$ make -C firmware -j$(nproc --all)
 ```
 
-On the Adafruit Feather RP2040: hold Boot button, click Reset button,
-release Boot button.
+Switch the RP2040 to bootloader mode.  For example, on the Adafruit
+Feather RP2040: hold Boot button, click Reset button, release Boot button.
 
-On the host:
+On the host (assuming the RP2040 boot partition shows up as `/dev/sda`):
+
 ```
 $ sudo mount /dev/sda1 /mnt
-$ sudo cp blink/blink.uf2 /mnt
+$ sudo cp firmware/*.uf2 /mnt
 $ sudo umount /mnt
 ```
 
