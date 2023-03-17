@@ -44,14 +44,14 @@ Then the IDROM
 */
 
 
-static uint8_t * reg;
-
-
 int idrom_init(void) {
+    uint8_t * reg;
+
     reg = hm2_fw_register("id", 0x0100, 16, NULL);
     if (reg == NULL) {
         return -1;
     }
+
     ((uint32_t*)reg)[0] = htonl(0x55aacafe);
     reg[4]  = 'T';
     reg[5]  = 'S';
@@ -67,17 +67,21 @@ int idrom_init(void) {
     if (reg == NULL) {
         return -1;
     }
+
     ((uint32_t*)reg)[0] = htonl(2);     // IDROM type
     ((uint32_t*)reg)[1] = htonl(64);    // offset to Module Descriptors
     ((uint32_t*)reg)[2] = htonl(512);   // offset to Pin Descriptors
+
     reg[12] = '2';
     reg[13] = 'P';
     reg[14] = 'R';
     reg[15] = '*';
+
     reg[16] = '*';
     reg[17] = '0';
     reg[18] = '4';
     reg[19] = '0';
+
     ((uint32_t*)reg)[5] = htonl(0);   // size of the "fpga"
     ((uint32_t*)reg)[6] = htonl(56);  // number of pins on the "fpga"
     ((uint32_t*)reg)[7] = htonl(1);   // number of ioports
