@@ -18,7 +18,7 @@ typedef struct {
 extern hm2_region_t hm2_region[HM2_MAX_REGIONS];
 extern size_t hm2_num_regions;
 
-extern uint8_t hm2_register_file[2^16];
+extern uint8_t hm2_register_file[1<<16];
 
 
 uint8_t * hm2_fw_register(
