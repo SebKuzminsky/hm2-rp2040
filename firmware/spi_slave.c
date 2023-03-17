@@ -153,5 +153,14 @@ int main() {
                 }
             }
         }
+
+        if (cmd == HM2_SPI_CMD_WRITE) {
+            for (size_t i = 0; i < size; ++i) {
+                spi_read_blocking(spi_default, 0x5a, (uint8_t*)&hm2_register_file32[addr/4], 4);
+                if (addr_auto_increment) {
+                    addr += 4;
+                }
+            }
+        }
     }
 }
