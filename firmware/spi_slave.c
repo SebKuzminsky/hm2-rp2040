@@ -27,6 +27,7 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
+#include "pico/multicore.h"
 #include "hardware/spi.h"
 
 #include "hm2-fw.h"
@@ -100,8 +101,12 @@ int main() {
     printf("Hostmot2 firwmare starting\n");
 
     idrom_init();
+    led_init();
 
     printf("Hostmot2 firmware initialized!\n");
+
+
+    multicore_launch_core1(hm2_fw_run);
 
 
     // Enable SPI at 10 MHz and connect to GPIOs

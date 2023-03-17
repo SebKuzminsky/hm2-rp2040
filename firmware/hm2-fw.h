@@ -30,7 +30,12 @@ uint8_t * hm2_fw_register(
 );
 
 
+void hm2_fw_run(void);
+
+
 int idrom_init(void);
+
+int led_init(void);
 
 
 #endif // HM2_FW_H

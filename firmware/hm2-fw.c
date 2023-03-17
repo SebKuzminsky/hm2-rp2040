@@ -34,3 +34,15 @@ uint8_t * hm2_fw_register(
 
     return &hm2_register_file[addr];
 }
+
+
+void hm2_fw_run(void) {
+    while (true) {
+        for (size_t i = 0; i < hm2_num_regions; ++i) {
+            if (hm2_region[i].update != NULL) {
+                hm2_region[i].update();
+            }
+        }
+        sleep_ms(1);
+    }
+}

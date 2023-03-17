@@ -3,10 +3,11 @@ add_executable(
     spi_slave.c
     hm2-fw.c
     idrom.c
+    led.c
 )
 
 # Pull in basic dependencies
-target_link_libraries(hm2_fw_spi pico_stdlib hardware_spi)
+target_link_libraries(hm2_fw_spi pico_stdlib pico_multicore hardware_spi)
 
 # enable usb output, disable uart output
 pico_enable_stdio_usb(hm2_fw_spi 1)
