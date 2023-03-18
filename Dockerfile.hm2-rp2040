@@ -5,16 +5,18 @@ ARG DEBIAN_FRONTEND=noninteractive
 # don't try to install VSCode
 ARG SKIP_VSCODE=1
 
-# don't try to disable the Raspberry Pi serial console
+# don't try to disable the host-side Raspberry Pi serial console
 ARG SKIP_UART=1
 
 RUN ( \
     set -e; \
     apt --quiet update; \
     apt install --quiet --yes \
+        bash-completion \
         pkg-config \
         python3 \
         sudo \
+        vim-nox \
         wget \
     ; \
     apt clean; \
