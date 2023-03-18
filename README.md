@@ -25,6 +25,10 @@ RPi with working /dev/spi), install spi-tools and run something like:
 
 `$ echo -en 'ABCD' | sudo spi-pipe --device=/dev/spidev0.0 --speed=$((10*1000*1000)) --blocksize=1 | hd`
 
+Write a bit to hm2 addr 0x0200, to turn the LED on:
+
+`$ printf '\x02\x00\xb8\x10\x00\x00\x00\x80' | sudo spi-pipe --device=/dev/spidev0.0 --speed=$((100 * 1000)) --blocksize=8  | hd`
+
 The SPI controller in the RP2040 in slave mode tops out around 11 MHz
 (RP2040 Datasheet 2023-03-02, section 4.4.3.4), which is not great.
 
