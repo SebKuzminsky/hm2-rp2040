@@ -43,10 +43,46 @@ or the 30+ MHz that hostmot2 likes to use.
 
 The RP2040 only has USB 1.1, no possibly low-latency USB 3.  :-(
 
+
+### Infineon EZ-USB FX3
+
 This stand-alone USB3-to-GPIF chip (whatever GPIF is) costs $40:
 <https://www.infineon.com/cms/en/product/universal-serial-bus/usb-peripheral-controllers-for-superspeed/ez-usb-fx3-usb-5gbps-peripheral-controller/>
 
+
+### Infineon CYUSB3065-BZXC
+
+Infineon/Cypress chip with Arm9 (200
+MHz), USB3 peripheral, and 12 gpios, $30:
+<https://www.mouser.com/ProductDetail/Infineon-Technologies/CYUSB3065-BZXC?qs=bWsWnctWn1zH454yc%252Bd8Ww%3D%3D>
+
+
+### FTDI FT60xQ-B
+
 FTDI FT601 costs $10: <https://ftdichip.com/products/ft601q-b/>
+
+
+### TI TUSB921
+
+TI TUSB9261, Arm Cortex M3, USB3 peripherial, "up to 12
+gpios", $8, designed for storage (SATA) applications:
+<https://www.mouser.com/ProductDetail/Texas-Instruments/TUSB9261IPVP?qs=FBI%252BX3tnPf1SUg0QkfZf9Q%3D%3D>
+
+There's a TUSB921 "demo board" available for $65.
+
+
+### WCH CH569
+
+Vapor?
+
+WCH CH569:
+
+    <http://www.wch-ic.com/products/CH569.html>
+
+    <https://www.cnx-software.com/2020/07/21/wch-ch569-risc-v-soc-offers-usb-3-0-gigabit-ethernet-high-speed-serdes-hspi-interfaces/>
+
+
+### USB3 stack for STM32
 
 <https://github.com/xtoolbox/TeenyUSB>
 
