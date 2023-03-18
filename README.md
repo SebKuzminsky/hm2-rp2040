@@ -131,7 +131,10 @@ $ sudo umount /mnt
 
 
 
-# Adafruit RP2040 Scorpio
+# Target boards
+
+
+## Adafruit RP2040 Scorpio
 
 I'm prototyping on the Adafruit RP2040 Scorpio (because that's what I
 have on hand).
