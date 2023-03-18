@@ -30,3 +30,12 @@ RUN ( \
     ./pico_setup.sh; \
     rm -f pico_setup.sh; \
 )
+
+RUN ( \
+    set -e; \
+    cd /opt/pico; \
+    git clone https://github.com/Wiznet/RP2040-HAT-C.git; \
+    cd RP2040-HAT-C; \
+    git submodule update --init --recursive libraries/ioLibrary_Driver; \
+    git submodule update --init --recursive libraries/mbedtls; \
+)

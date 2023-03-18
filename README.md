@@ -7,13 +7,25 @@ microcontroller.
 
 ## Ethernet
 
-The primary target is the Wiznet W6100, because it has Ethernet:
+The primary targets are the Wiznet W5500-EVB-Pico and W6100-EVB-Pico,
+cheap RP2040 Pico-like boards with Ethernet:
+<https://docs.wiznet.io/Product/iEthernet/W5500/w5500-evb-pico>
 <https://docs.wiznet.io/Product/iEthernet/W6100/w6100-evb-pico>
 
 $18 from Mouser: <https://www.mouser.com/ProductDetail/WIZnet/W6100-EVB-PICO?qs=amGC7iS6iy9FRNAvZsvTNg%3D%3D#>
 
 <https://github.com/WIZnet-ArduinoEthernet/Ethernet/tree/W6100-EVB-Pico>
 <https://linuxgizmos.com/wiznet-board-features-raspberry-pi-2040-and-hardwired-internet-controller-chip/>
+
+Code here: <https://github.com/Wiznet/RP2040-HAT-C>
+
+Test ethernet performance (assuming CPU 3 is your isolcpu one):
+
+`$ sudo taskset -c 3 chrt 99 ping -i .001 -q 192.168.1.121`
+
+Send a UDP message to a HM2 board:
+
+`$ printf 'hey' | nc -u 192.168.1.121 27181`
 
 
 ## SPI
@@ -148,3 +160,34 @@ have on hand).
 <https://learn.adafruit.com/introducing-feather-rp2040-scorpio>
 
 Uses PIO to control WS2812 neopixels.
+
+
+## Wiznet W5500 EVB-Pico
+
+<https://www.wiznet.io/product-item/w5500-evb-pico/>
+
+<https://forum.wiznet.io/>
+
+<https://github.com/Wiznet/RP2040-HAT-C/blob/main/getting_started.md>
+
+* clone <https://github.com/Wiznet/RP2040-HAT-C.git> including submodules
+
+    * seems like this clones raspberrypi pico-sdk and pico-extras instead of the systemwide one, bad manners
+
+    * applies a patch to one of their own files??
+
+* edit CMakeLists.txt to set WIZNET_CHIP to W5500
+
+* start with examples/http/server
+
+* (not needed for W5500-EVB-Pico) setup SPI port and pin in 'w5x00_spi.h' in 'RP2040-HAT-C/port/ioLibrary_Driver/' directory.
+
+* Setup network configuration in 'RP2040-HAT-C/examples/http/server//w5x00_http_server.c'
+
+* `mkdir build && cd build`
+
+* `cmake -DPICO_BOARD=wiznet_w5100s_evb_pico ..`
+
+To flash: remove power, push & hold BOOTSEL button, reapply power, release BOOTSEL
+
+This is integrated with the docker build env now.

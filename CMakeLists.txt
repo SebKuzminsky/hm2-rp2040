@@ -5,6 +5,29 @@ include(pico_sdk_import.cmake)
 
 include(pico_extras_import_optional.cmake)
 
+
+# Set up Wiznet's networking library from RP2040-HAT-C
+# Set ethernet chip
+set(WIZNET_CHIP W5500)
+
+if(${WIZNET_CHIP} STREQUAL W5100S)
+    add_definitions(-D_WIZCHIP_=W5100S)
+elseif(${WIZNET_CHIP} STREQUAL W5500)
+    add_definitions(-D_WIZCHIP_=W5500)
+else()
+    message(FATAL_ERROR "WIZNET_CHIP is wrong = ${WIZNET_CHIP}")
+endif()
+
+message(STATUS "WIZNET_CHIP = ${WIZNET_CHIP}")
+
+set(WIZNET_SDK_PATH "/opt/pico/RP2040-HAT-C")
+set(WIZNET_DIR "${WIZNET_SDK_PATH}/libraries/ioLibrary_Driver")
+set(PORT_DIR "${WIZNET_SDK_PATH}/port")
+
+include("${WIZNET_SDK_PATH}/libraries/CMakeLists.txt")
+include("${WIZNET_SDK_PATH}/port/CMakeLists.txt")
+
+
 project(hm2_rp2040 C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -17,6 +40,7 @@ endif()
 pico_sdk_init()
 
 add_subdirectory(firmware)
+add_subdirectory(http-server)
 
 add_compile_options(
     -Wall
