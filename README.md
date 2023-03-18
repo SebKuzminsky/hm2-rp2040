@@ -65,6 +65,8 @@ MHz), USB3 peripheral, and 12 gpios, $30:
 
 FTDI FT601 costs $10: <https://ftdichip.com/products/ft601q-b/>
 
+Dev board for $80: <https://ftdichip.com/products/umft601x-b/>
+
 
 ### TI TUSB921
 
