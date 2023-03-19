@@ -40,7 +40,6 @@ endif()
 pico_sdk_init()
 
 add_subdirectory(firmware)
-add_subdirectory(http-server)
 
 add_compile_options(
     -Wall
