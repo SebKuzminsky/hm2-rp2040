@@ -8,7 +8,7 @@ hm2_region_t hm2_region[HM2_MAX_REGIONS];
 size_t hm2_num_regions;
 
 uint8_t hm2_register_file[1<<16];
-uint32_t * hm2_register_file32 = hm2_register_file;
+uint32_t * hm2_register_file32 = (uint32_t *)hm2_register_file;
 
 
 uint8_t * hm2_fw_register(
