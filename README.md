@@ -191,3 +191,10 @@ Uses PIO to control WS2812 neopixels.
 To flash: remove power, push & hold BOOTSEL button, reapply power, release BOOTSEL
 
 This is integrated with the docker build env now.
+
+Good ping times on Buster, terrible on Bookworm:
+
+    --- 192.168.1.121 ping statistics ---
+    1000000 packets transmitted, 1000000 received, 0% packet loss, time 1998ms
+    rtt min/avg/max/mdev = 0.041/0.043/0.088/0.003 ms
+
