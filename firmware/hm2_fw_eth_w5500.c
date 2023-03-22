@@ -64,6 +64,17 @@ static void set_clock_khz(void) {
 }
 
 
+static void handle_lbp16(uint8_t const * const packet, size_t size) {
+    for (size_t i = 0; i < size; ++i) {
+        printf("0x%02x (%c) ", packet[i], packet[i]);
+        if (i % 8 == 7) {
+            printf("\n");
+        }
+    }
+    printf("\n");
+}
+
+
 int main() {
     stdio_init_all();
 
@@ -102,13 +113,6 @@ int main() {
 
         int32_t r = recvfrom(0, packet, sizeof(packet), addr, &port);
         printf("recvfrom %d (addr=%u.%u.%u.%u, port=%u)\n", r, addr[0], addr[1], addr[2], addr[3], port);
-
-        for (int i = 0; i < r; ++i) {
-            printf("0x%02x (%c) ", packet[i], packet[i]);
-            if (i % 8 == 7) {
-                printf("\n");
-            }
-        }
-        printf("\n");
+        handle_lbp16(packet, r);
     }
 }
