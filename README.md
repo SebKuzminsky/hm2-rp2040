@@ -27,6 +27,11 @@ Send a UDP message to a HM2 board:
 
 `$ printf 'hey' | nc -u 192.168.1.121 27181`
 
+Sniff packets to see what's being sent (remember LBP16 commands are 16
+bits long and sent with little-endian byte order):
+
+`$ sudo tshark -i enx0023575c0964 -l -n -e ip.src -e udp.srcport -e ip.dst -e udp.dstport -e data -Tfield udp port 27181`
+
 
 ## SPI
 
