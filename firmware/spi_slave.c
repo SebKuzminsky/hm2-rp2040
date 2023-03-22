@@ -32,6 +32,16 @@
 
 #include "hm2-fw.h"
 
+
+#if !defined(spi_default) || !defined(PICO_DEFAULT_SPI_SCK_PIN) || !defined(PICO_DEFAULT_SPI_TX_PIN) || !defined(PICO_DEFAULT_SPI_RX_PIN) || !defined(PICO_DEFAULT_SPI_CSN_PIN)
+#error hm2-fw requires a board with SPI pins
+#endif
+
+#if !defined(PICO_DEFAULT_LED_PIN)
+#error hm2-fw requires a board with an LED pin
+#endif
+
+
 #define HM2_SPI_CMD_READ  (0xa)
 #define HM2_SPI_CMD_WRITE (0xb)
 
@@ -50,21 +60,6 @@ void printbuf(uint8_t buf[], size_t len) {
         putchar('\n');
     }
 }
-
-#define spi_default spi1
-#define PICO_DEFAULT_SPI_SCK_PIN 14  // labeled SCK (green)
-#define PICO_DEFAULT_SPI_TX_PIN   8  // labeled MI (blue)
-#define PICO_DEFAULT_SPI_RX_PIN  15  // labeled MO (yellow)
-#define PICO_DEFAULT_SPI_CSN_PIN  9  // labeled 9 (white)
-
-
-#if !defined(spi_default) || !defined(PICO_DEFAULT_SPI_SCK_PIN) || !defined(PICO_DEFAULT_SPI_TX_PIN) || !defined(PICO_DEFAULT_SPI_RX_PIN) || !defined(PICO_DEFAULT_SPI_CSN_PIN)
-#error hm2-fw requires a board with SPI pins
-#endif
-
-#if !defined(PICO_DEFAULT_LED_PIN)
-#error hm2-fw requires a board with an LED pin
-#endif
 
 
 int main() {

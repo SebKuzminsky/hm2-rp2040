@@ -14,12 +14,23 @@ target_link_libraries(
 
 
 #
-# SPI
+# SPI on Adafruit Feather RP2040 Scorpio
 #
 
 add_executable(
     hm2_fw_spi
     spi_slave.c
+)
+
+# PICO_BOARD=\"adafruit_feather_rp2040\"
+add_compile_definitions(
+    hm2_fw_spi
+    PRIVATE
+    PICO_DEFAULT_SPI=1
+    PICO_DEFAULT_SPI_SCK_PIN=14 # labeled SCK (green)
+    PICO_DEFAULT_SPI_TX_PIN=8   # labeled MI (blue)
+    PICO_DEFAULT_SPI_RX_PIN=15  # labeled MO (yellow)
+    PICO_DEFAULT_SPI_CSN_PIN=9  # labeled 9 (white)
 )
 
 # Pull in basic dependencies
