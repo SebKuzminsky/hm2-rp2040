@@ -1,3 +1,18 @@
+add_library(
+    hostmot2-firmware
+    hm2-fw.c
+    idrom.c
+    led.c
+)
+
+target_link_libraries(
+    hostmot2-firmware
+    PRIVATE
+    pico_stdlib
+    hardware_dma
+)
+
+
 #
 # SPI
 #
@@ -5,13 +20,16 @@
 add_executable(
     hm2_fw_spi
     spi_slave.c
-    hm2-fw.c
-    idrom.c
-    led.c
 )
 
 # Pull in basic dependencies
-target_link_libraries(hm2_fw_spi pico_stdlib pico_multicore hardware_spi)
+target_link_libraries(
+    hm2_fw_spi
+    pico_stdlib
+    pico_multicore
+    hardware_spi
+    hostmot2-firmware
+)
 
 # enable usb output, disable uart output
 pico_enable_stdio_usb(hm2_fw_spi 1)
@@ -40,6 +58,7 @@ target_link_libraries(
     ETHERNET_FILES
     IOLIBRARY_FILES
     HTTPSERVER_FILES
+    hostmot2-firmware
 )
 
 pico_enable_stdio_usb(${TARGET_NAME} 1)
