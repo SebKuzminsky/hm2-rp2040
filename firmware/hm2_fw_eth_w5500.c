@@ -13,6 +13,9 @@
 
 #include "socket.h"
 
+#include "hm2-fw.h"
+
+
 // #include "httpServer.h"
 // #include "web_page.h"
 
@@ -64,30 +67,8 @@ static void set_clock_khz(void) {
 int main() {
     stdio_init_all();
 
-    uint const led_pin = 25;
-    gpio_init(led_pin);
-    gpio_set_dir(led_pin, GPIO_OUT);
-
-    gpio_put(led_pin, 1);
-    sleep_ms(200);
-    gpio_put(led_pin, 0);
-    sleep_ms(200);
-    gpio_put(led_pin, 1);
-    sleep_ms(200);
-    gpio_put(led_pin, 0);
-    sleep_ms(200);
-
-    gpio_put(led_pin, 1);
-    sleep_ms(200);
-    gpio_put(led_pin, 0);
-    sleep_ms(200);
-    gpio_put(led_pin, 1);
-    sleep_ms(200);
-    gpio_put(led_pin, 0);
-    sleep_ms(200);
-
+    led_blink(2, 200);
     printf("hello world\n");
-
 
     set_clock_khz();
 
