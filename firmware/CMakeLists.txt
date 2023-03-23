@@ -1,12 +1,12 @@
 add_library(
-    hostmot2-firmware
+    hostmot2_firmware
     hm2-fw.c
     idrom.c
     led.c
 )
 
 target_link_libraries(
-    hostmot2-firmware
+    hostmot2_firmware
     PRIVATE
     pico_stdlib
     hardware_dma
@@ -15,14 +15,14 @@ target_link_libraries(
 
 #
 # SPI on Adafruit Feather RP2040 Scorpio
+# PICO_BOARD="adafruit_feather_rp2040"
 #
 
 add_executable(
     hm2_fw_spi
-    spi_slave.c
+    hm2_fw_spi.c
 )
 
-# PICO_BOARD=\"adafruit_feather_rp2040\"
 add_compile_definitions(
     hm2_fw_spi
     PRIVATE
@@ -39,7 +39,7 @@ target_link_libraries(
     pico_stdlib
     pico_multicore
     hardware_spi
-    hostmot2-firmware
+    hostmot2_firmware
 )
 
 # enable usb output, disable uart output
@@ -51,28 +51,28 @@ pico_add_extra_outputs(hm2_fw_spi)
 
 
 #
-# Wiznet W5500
+# Wiznet W5500-EVB-Pico
+# PICO_BOARD="wiznet_w5100s_evb_pico"
 #
 
-set(TARGET_NAME hm2_fw_eth_w5500)
-
 add_executable(
-    ${TARGET_NAME}
-    ${TARGET_NAME}.c
+    hm2_fw_eth_w5500
+    hm2_fw_eth_w5500.c
 )
 
 target_link_libraries(
-    ${TARGET_NAME} PRIVATE
+    hm2_fw_eth_w5500
+    PRIVATE
     pico_stdlib
     hardware_spi
     hardware_dma
     ETHERNET_FILES
     IOLIBRARY_FILES
     HTTPSERVER_FILES
-    hostmot2-firmware
+    hostmot2_firmware
 )
 
-pico_enable_stdio_usb(${TARGET_NAME} 1)
-pico_enable_stdio_uart(${TARGET_NAME} 0)
+pico_enable_stdio_usb(hm2_fw_eth_w5500 1)
+pico_enable_stdio_uart(hm2_fw_eth_w5500 0)
 
-pico_add_extra_outputs(${TARGET_NAME})
+pico_add_extra_outputs(hm2_fw_eth_w5500)
