@@ -6,6 +6,8 @@
 
 #include <stdio.h>
 
+#include "pico/multicore.h"
+
 #include "port_common.h"
 
 #include "wizchip_conf.h"
@@ -44,7 +46,7 @@ static void set_clock_khz(void) {
 }
 
 
-static void handle_lbp16(uint8_t const * const packet, size_t size) {
+static void handle_lbp16(uint8_t const * const packet, size_t size, uint8_t reply_addr[4], uint16_t reply_port) {
     for (size_t i = 0; i < size; ++i) {
         printf("0x%02x (%c) ", packet[i], packet[i]);
         if (i % 8 == 7) {
@@ -52,6 +54,99 @@ static void handle_lbp16(uint8_t const * const packet, size_t size) {
         }
     }
     printf("\n");
+
+    uint16_t cmd = packet[0] | (packet[1] << 8);
+    printf("decoding cmd 0x%04x\n", cmd);
+
+    bool cmd_write = cmd & 0x8000;
+    bool cmd_has_addr = cmd & 0x4000;
+    bool cmd_info_area = cmd & 0x2000;
+    uint8_t cmd_memory_space = (cmd >> 10) & 0x7;
+    uint8_t cmd_transfer_size = (cmd >> 8) & 0x3;
+    int8_t cmd_transfer_bits;
+    bool cmd_addr_increment = cmd & 0x0080;
+    uint8_t cmd_transfer_count = cmd & 0x7f;
+
+    switch (cmd_transfer_size) {
+        case 0:
+            cmd_transfer_bits = 8;
+            break;
+        case 1:
+            cmd_transfer_bits = 16;
+            break;
+        case 2:
+            cmd_transfer_bits = 32;
+            break;
+        case 3:
+            cmd_transfer_bits = 64;
+            break;
+        default:
+            cmd_transfer_bits = -1;
+    }
+
+
+    printf("    write: %d\n", cmd_write);
+    printf("    has_addr: %d\n", cmd_has_addr);
+    printf("    info_area: %d\n", cmd_info_area);
+    printf("    memory_space: %d\n", cmd_memory_space);
+    printf("    transfer_size: %d (%d bits)\n", cmd_transfer_size, cmd_transfer_bits);
+    printf("    addr_increment: %d\n", cmd_addr_increment);
+    printf("    transfer_count: %d\n", cmd_transfer_count);
+
+    if (!cmd_has_addr) {
+        printf("no addr??\n");
+        return;
+    }
+
+    if (cmd_info_area != 0) {
+        printf("what even is the info area??\n");
+        return;
+    }
+
+    if (cmd_memory_space != 0) {
+        printf("i only know memory space 0??\n");
+        return;
+    }
+
+    if (cmd_transfer_size != 2) {
+        printf("i only know how to transfer 32-bit chunks\n");
+        return;
+    }
+
+    if (cmd_transfer_count < 1 || cmd_transfer_count > 127) {
+        printf("transfer count %d out of bounds\n", cmd_transfer_count);
+        return;
+    }
+
+    uint16_t addr = 0x0000;
+    if (cmd_has_addr) {
+        addr = packet[2] | (packet[3] << 8);
+    }
+
+    if (cmd_write) {
+        /*
+        for (size_t i = 0; i < cmd_transfer_count; ++i) {
+            spi_read_blocking(spi_default, 0x5a, (uint8_t*)&hm2_register_file32[addr/4], 4);
+            if (addr_auto_increment) {
+                addr += 4;
+            }
+        }
+        */
+    } else {
+        uint8_t reply_packet[127*4];
+        for (size_t i = 0; i < cmd_transfer_count; ++i) {
+            // ugh
+            reply_packet[i*4] = hm2_register_file[addr+3];
+            reply_packet[(i*4)+1] = hm2_register_file[addr+2];
+            reply_packet[(i*4)+2] = hm2_register_file[addr+1];
+            reply_packet[(i*4)+3] = hm2_register_file[addr+0];
+            if (cmd_addr_increment) {
+                addr += 4;
+            }
+        }
+        int32_t r = sendto(0, (uint8_t *)reply_packet, cmd_transfer_count * 4, reply_addr, reply_port);
+    }
+
 }
 
 
@@ -59,6 +154,17 @@ int main() {
     stdio_init_all();
 
     led_blink(2, 200);
+
+    printf("Hostmot2 firwmare starting\n");
+
+    idrom_init();
+    led_init();
+
+    printf("Hostmot2 firmware initialized!\n");
+
+
+    multicore_launch_core1(hm2_fw_run);
+
 
     set_clock_khz();
 
@@ -84,6 +190,6 @@ int main() {
 
         int32_t r = recvfrom(0, packet, sizeof(packet), addr, &port);
         printf("recvfrom %d (addr=%u.%u.%u.%u, port=%u)\n", r, addr[0], addr[1], addr[2], addr[3], port);
-        handle_lbp16(packet, r);
+        handle_lbp16(packet, r, addr, port);
     }
 }

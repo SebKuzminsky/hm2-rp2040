@@ -64,11 +64,11 @@ target_link_libraries(
     hm2_fw_eth_w5500
     PRIVATE
     pico_stdlib
+    pico_multicore
     hardware_spi
     hardware_dma
     ETHERNET_FILES
     IOLIBRARY_FILES
-    HTTPSERVER_FILES
     hostmot2_firmware
 )
 
