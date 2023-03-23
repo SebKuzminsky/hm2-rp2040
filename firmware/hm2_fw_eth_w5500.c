@@ -16,20 +16,9 @@
 #include "hm2-fw.h"
 
 
-// #include "httpServer.h"
-// #include "web_page.h"
-
-
-/* Clock */
 #define PLL_SYS_KHZ (133 * 1000)
 
-/* Buffer */
-// #define ETHERNET_BUF_MAX_SIZE (1024 * 2)
 
-/* Socket */
-// #define HTTP_SOCKET_MAX_NUM 4
-
-/* Network */
 static wiz_NetInfo g_net_info = {
     .mac = {0x00, 0x08, 0xDC, 0x12, 0x34, 0x56}, // MAC address
     .ip = {192, 168, 1, 121},                    // IP address
@@ -38,15 +27,6 @@ static wiz_NetInfo g_net_info = {
     .dns = {8, 8, 8, 8},                         // DNS server
     .dhcp = NETINFO_STATIC                       // DHCP enable/disable
 };
-
-/* HTTP */
-// static uint8_t g_http_send_buf[ETHERNET_BUF_MAX_SIZE] = {
-    // 0,
-// };
-// static uint8_t g_http_recv_buf[ETHERNET_BUF_MAX_SIZE] = {
-    // 0,
-// };
-// static uint8_t g_http_socket_num_list[HTTP_SOCKET_MAX_NUM] = {0, 1, 2, 3};
 
 
 static void set_clock_khz(void) {
@@ -79,7 +59,6 @@ int main() {
     stdio_init_all();
 
     led_blink(2, 200);
-    printf("hello world\n");
 
     set_clock_khz();
 
@@ -94,14 +73,6 @@ int main() {
 
     print_network_information(g_net_info);
 
-
-    // httpServer_init(g_http_send_buf, g_http_recv_buf, HTTP_SOCKET_MAX_NUM, g_http_socket_num_list);
-    // reg_httpServer_webContent("index.html", index_page);
-    // while (1) {
-    //     for (uint8_t i = 0; i < HTTP_SOCKET_MAX_NUM; i++) {
-    //         httpServer_run(i);
-    //     }
-    // }
 
     int8_t sock = socket(0, Sn_MR_UDP, 27181, 0);
     printf("socket %d\n", sock);
