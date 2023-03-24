@@ -157,7 +157,7 @@ static void handle_lbp16(uint8_t const * const packet, size_t size, uint8_t repl
 
             case 0: {
                 if (cmd_transfer_size != 2) {
-                    printf("i only know how to transfer 32-bit chunks from memory area 0\n");
+                    printf("i only know how to read 32-bit chunks from memory area 0\n");
                     return;
                 }
 
@@ -185,7 +185,7 @@ static void handle_lbp16(uint8_t const * const packet, size_t size, uint8_t repl
             }
 
             default: {
-                printf("unknown memory space %d\n", cmd_memory_space);
+                printf("can't read from  memory space %d\n", cmd_memory_space);
                 break;
             }
 
