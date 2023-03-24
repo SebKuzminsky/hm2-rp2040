@@ -2,6 +2,45 @@ This is an implementation of hostmot2 firmware for the RP2040
 microcontroller.
 
 
+
+
+# Implementation details
+
+The RP2040 has two cores.  This firmware uses one core for host
+communication (SPI or Ethernet) and the other core for running the
+hostmot2 functionality.
+
+The two cores communicate via shared memory: the 64 kB hostmot2 register
+file.
+
+At startup, boot core initializes the register file with the IDROM,
+Module Descriptors, Pin Descriptors, and all the per-Module areas.
+A handler is registered for each selected (compiled-in) Module, to
+perform that Module's computation and I/O.  The second core is started,
+running all the Module handlers in a loop.  Finally the boot core starts
+communications with the host.
+
+
+## Endian-ness
+
+Most hm2 registers are 32 bits wide.  The registers in the register file
+are stored in native (host) byte order of the RP2040's ARM Cortex-M0
+processors.  The contents of multi-byte registers are converted to the
+byte order specified by the host communication interface (if needed)
+when data is read from and written to the host.
+
+
+## Limitations
+
+This architecture (eth/SPI host comm on one core, hm2 firmware on the
+other core) can't handle FIFO registers.  It would need special handling
+for FIFOs, which is currently not implemented.  This does not affect any
+of the common simple Modules, such as ioport (gpio), stepgen, pwmgen,
+or encoder.
+
+
+
+
 # Host connection options
 
 
