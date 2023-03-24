@@ -168,7 +168,7 @@ static void handle_lbp16(uint8_t const * const packet, size_t size, uint8_t repl
                         addr += 4;
                     }
                 }
-                int32_t r = sendto(0, (uint8_t *)reply_packet, cmd_transfer_count * 4, reply_addr, reply_port);
+                int32_t r = sendto(0, reply_packet, cmd_transfer_count * 4, reply_addr, reply_port);
                 break;
             }
 
