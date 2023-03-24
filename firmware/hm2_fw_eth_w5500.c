@@ -138,6 +138,7 @@ static void handle_lbp16(uint8_t const * const packet, size_t size, uint8_t repl
     uint16_t addr = 0x0000;
     if (cmd_has_addr) {
         addr = packet[2] | (packet[3] << 8);
+        printf("    addr: 0x%04x\n", addr);
     }
 
     if (cmd_write) {
