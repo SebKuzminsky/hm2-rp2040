@@ -5,6 +5,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "pico/multicore.h"
 
@@ -28,6 +29,32 @@ static wiz_NetInfo g_net_info = {
     .gw = {192, 168, 1, 1},                      // Gateway
     .dns = {8, 8, 8, 8},                         // DNS server
     .dhcp = NETINFO_STATIC                       // DHCP enable/disable
+};
+
+
+// Read-only const board id.  From the 7i93 manual v1.0:
+// MEMORY SPACE 7 LAYOUT:
+// ADDRESS DATA
+// 0000 CardNameChar-0,1
+// 0002 CardNameChar-2,3
+// 0004 CardNameChar-4,5
+// 0006 CardNameChar-6,7
+// 0008 CardNameChar-8,9
+// 000A CardNameChar-10,11
+// 000C CardNameChar-12.13
+// 000E CardNameChar-14,15
+// 0010 LBPVersion
+// 0012 FirmwareVersion
+// 0014 Option Jumpers
+// 0016 Reserved
+// 0018 RecvStartTS 1 uSec timestamps
+// 001A RecvDoneTS For performance monitoring
+// 001C SendStartTS Send timestamps are
+// 001E SendDoneTS from previous packet
+//
+// Only the CardName seems to be used.  Should be all uppercase.
+uint8_t memory_area_7[32] = {
+    "W5500-EVB-PICO"
 };
 
 
@@ -103,16 +130,6 @@ static void handle_lbp16(uint8_t const * const packet, size_t size, uint8_t repl
         return;
     }
 
-    if (cmd_memory_space != 0) {
-        printf("i only know memory space 0??\n");
-        return;
-    }
-
-    if (cmd_transfer_size != 2) {
-        printf("i only know how to transfer 32-bit chunks\n");
-        return;
-    }
-
     if (cmd_transfer_count < 1 || cmd_transfer_count > 127) {
         printf("transfer count %d out of bounds\n", cmd_transfer_count);
         return;
@@ -134,17 +151,46 @@ static void handle_lbp16(uint8_t const * const packet, size_t size, uint8_t repl
         */
     } else {
         uint8_t reply_packet[127*4];
-        for (size_t i = 0; i < cmd_transfer_count; ++i) {
-            // ugh
-            reply_packet[i*4] = hm2_register_file[addr+3];
-            reply_packet[(i*4)+1] = hm2_register_file[addr+2];
-            reply_packet[(i*4)+2] = hm2_register_file[addr+1];
-            reply_packet[(i*4)+3] = hm2_register_file[addr+0];
-            if (cmd_addr_increment) {
-                addr += 4;
+
+        switch (cmd_memory_space) {
+
+            case 0: {
+                if (cmd_transfer_size != 2) {
+                    printf("i only know how to transfer 32-bit chunks from memory area 0\n");
+                    return;
+                }
+
+                for (size_t i = 0; i < cmd_transfer_count; ++i) {
+                    // ugh
+                    reply_packet[i*4] = hm2_register_file[addr+3];
+                    reply_packet[(i*4)+1] = hm2_register_file[addr+2];
+                    reply_packet[(i*4)+2] = hm2_register_file[addr+1];
+                    reply_packet[(i*4)+3] = hm2_register_file[addr+0];
+                    if (cmd_addr_increment) {
+                        addr += 4;
+                    }
+                }
+                int32_t r = sendto(0, (uint8_t *)reply_packet, cmd_transfer_count * 4, reply_addr, reply_port);
+                break;
             }
+
+            case 7: {
+                if (cmd_transfer_size != 1) {
+                    printf("i only know how to transfer 16-bit chunks from memory area 7\n");
+                    return;
+                }
+
+                memcpy(reply_packet, memory_area_7, cmd_transfer_count * 2);
+                int32_t r = sendto(0, (uint8_t *)reply_packet, cmd_transfer_count * 2, reply_addr, reply_port);
+                break;
+            }
+
+            default: {
+                printf("unknown memory space %d\n", cmd_memory_space);
+                break;
+            }
+
         }
-        int32_t r = sendto(0, (uint8_t *)reply_packet, cmd_transfer_count * 4, reply_addr, reply_port);
     }
 
 }
