@@ -73,7 +73,7 @@ static void set_clock_khz(void) {
 }
 
 
-static void handle_lbp16(uint8_t const * const packet, size_t size, uint8_t reply_addr[4], uint16_t reply_port) {
+static void handle_lbp16(uint8_t const * packet, size_t size, uint8_t reply_addr[4], uint16_t reply_port) {
     for (size_t i = 0; i < size; ++i) {
         printf("0x%02x ", packet[i]);
         if (i % 8 == 7) {
@@ -84,6 +84,7 @@ static void handle_lbp16(uint8_t const * const packet, size_t size, uint8_t repl
 
     uint16_t cmd = packet[0] | (packet[1] << 8);
     printf("decoding cmd 0x%04x\n", cmd);
+    packet += 2;
 
     bool cmd_write = cmd & 0x8000;
     bool cmd_has_addr = cmd & 0x4000;
@@ -137,19 +138,39 @@ static void handle_lbp16(uint8_t const * const packet, size_t size, uint8_t repl
 
     uint16_t addr = 0x0000;
     if (cmd_has_addr) {
-        addr = packet[2] | (packet[3] << 8);
+        addr = packet[0] | (packet[1] << 8);
         printf("    addr: 0x%04x\n", addr);
+        packet += 2;
     }
 
     if (cmd_write) {
-        /*
-        for (size_t i = 0; i < cmd_transfer_count; ++i) {
-            spi_read_blocking(spi_default, 0x5a, (uint8_t*)&hm2_register_file32[addr/4], 4);
-            if (addr_auto_increment) {
-                addr += 4;
+
+        switch (cmd_memory_space) {
+
+            case 0: {
+                if (cmd_transfer_size != 2) {
+                    printf("i only know how to write 32-bit chunks to memory area 0\n");
+                    return;
+                }
+
+                for (size_t i = 0; i < cmd_transfer_count; ++i) {
+                    // Lucky us, the RP2040 is little-endian just like
+                    // the LBP16 network protocol.
+                    memcpy(&hm2_register_file[addr], &packet[i*4], 4);
+                    if (cmd_addr_increment) {
+                        addr += 4;
+                    }
+                }
+
+                break;
+            }
+
+            default: {
+                printf("can't write to memory space %d\n", cmd_memory_space);
+                break;
             }
         }
-        */
+
     } else {
         uint8_t reply_packet[127*4];
 
