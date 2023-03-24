@@ -45,54 +45,64 @@ Then the IDROM
 
 
 int idrom_init(void) {
-    uint8_t * reg;
+    //
+    // "ID" is just the cookie (0x55aacafe) and the firmware name
+    // ("HOSTMOT2"), at 0x0100.
+    //
 
-    reg = hm2_fw_register("id", 0x0100, 16, NULL);
-    if (reg == NULL) {
+    uint8_t * id_reg = hm2_fw_register("id", 0x0100, 16, NULL);
+    if (id_reg == NULL) {
         return -1;
     }
 
-    ((uint32_t*)reg)[0] = htonl(0x55aacafe);
-    reg[4]  = 'T';
-    reg[5]  = 'S';
-    reg[6]  = 'O';
-    reg[7]  = 'H';
-    reg[8]  = '2';
-    reg[9]  = 'T';
-    reg[10] = 'O';
-    reg[11] = 'M';
-    ((uint32_t*)reg)[3] = htonl(0x0400);
+    ((uint32_t*)id_reg)[0] = 0x55aacafe;
+    id_reg[4]  = 'H';
+    id_reg[5]  = 'O';
+    id_reg[6]  = 'S';
+    id_reg[7]  = 'T';
+    id_reg[8]  = 'M';
+    id_reg[9]  = 'O';
+    id_reg[10] = 'T';
+    id_reg[11] = '2';
+    ((uint32_t*)id_reg)[3] = 0x0400;
 
-    reg = hm2_fw_register("idrom", 0x0400, 0x40, NULL);
-    if (reg == NULL) {
+
+    //
+    // "IDROM" has a bunch of high-level metadata about the board,
+    // and pointers to the Module Descriptors and Pin Descriptors.
+    //
+
+    uint8_t * idrom_reg = hm2_fw_register("idrom", 0x0400, 0x40, NULL);
+    if (idrom_reg == NULL) {
         return -1;
     }
 
-    ((uint32_t*)reg)[0] = htonl(2);     // IDROM type
-    ((uint32_t*)reg)[1] = htonl(64);    // offset to Module Descriptors
-    ((uint32_t*)reg)[2] = htonl(512);   // offset to Pin Descriptors
+    ((uint32_t*)idrom_reg)[0] = 2;     // IDROM type
+    ((uint32_t*)idrom_reg)[1] = 0x0040;   // offset to Module Descriptors
+    ((uint32_t*)idrom_reg)[2] = 0x0200;   // offset to Pin Descriptors
 
-    reg[12] = '2';
-    reg[13] = 'P';
-    reg[14] = 'R';
-    reg[15] = '*';
+    idrom_reg[12] = '*';
+    idrom_reg[13] = 'R';
+    idrom_reg[14] = 'P';
+    idrom_reg[15] = '2';
 
-    reg[16] = '*';
-    reg[17] = '0';
-    reg[18] = '4';
-    reg[19] = '0';
+    idrom_reg[16] = '0';
+    idrom_reg[17] = '4';
+    idrom_reg[18] = '0';
+    idrom_reg[19] = '*';
 
-    ((uint32_t*)reg)[5] = htonl(0);   // size of the "fpga"
-    ((uint32_t*)reg)[6] = htonl(56);  // number of pins on the "fpga"
-    ((uint32_t*)reg)[7] = htonl(1);   // number of ioports
-    ((uint32_t*)reg)[8] = htonl(25);  // total number of pins
-    ((uint32_t*)reg)[9] = htonl(25);  // number of pins per ioport
-    ((uint32_t*)reg)[10] = htonl(10*1000*1000);  // ClockLow
-    ((uint32_t*)reg)[11] = htonl(20*1000*1000);  // ClockHigh
-    ((uint32_t*)reg)[12] = htonl(10);  // Instance Stride 0
-    ((uint32_t*)reg)[13] = htonl(20);  // Instance Stride 1
-    ((uint32_t*)reg)[14] = htonl(30);  // Register Stride 0
-    ((uint32_t*)reg)[15] = htonl(40);  // Register Stride 1
+    ((uint32_t*)idrom_reg)[5] = 0;   // size of the "fpga"
+    ((uint32_t*)idrom_reg)[6] = 56;  // number of pins on the "fpga"
+    ((uint32_t*)idrom_reg)[7] = 1;   // number of ioports
+    ((uint32_t*)idrom_reg)[8] = 20;  // total number of pins
+    ((uint32_t*)idrom_reg)[9] = 20;  // number of pins per ioport
+    ((uint32_t*)idrom_reg)[10] = 10*1000*1000;  // ClockLow
+    ((uint32_t*)idrom_reg)[11] = 20*1000*1000;  // ClockHigh
+    ((uint32_t*)idrom_reg)[12] = 10;  // Instance Stride 0
+    ((uint32_t*)idrom_reg)[13] = 20;  // Instance Stride 1
+    ((uint32_t*)idrom_reg)[14] = 30;  // Register Stride 0
+    ((uint32_t*)idrom_reg)[15] = 40;  // Register Stride 1
+
 
     return 0;
 }

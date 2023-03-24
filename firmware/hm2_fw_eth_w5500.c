@@ -161,11 +161,9 @@ static void handle_lbp16(uint8_t const * const packet, size_t size, uint8_t repl
                 }
 
                 for (size_t i = 0; i < cmd_transfer_count; ++i) {
-                    // ugh
-                    reply_packet[i*4] = hm2_register_file[addr+3];
-                    reply_packet[(i*4)+1] = hm2_register_file[addr+2];
-                    reply_packet[(i*4)+2] = hm2_register_file[addr+1];
-                    reply_packet[(i*4)+3] = hm2_register_file[addr+0];
+                    // Lucky us, the RP2040 is little-endian just like
+                    // the LBP16 network protocol.
+                    memcpy(&reply_packet[i*4], &hm2_register_file[addr], 4);
                     if (cmd_addr_increment) {
                         addr += 4;
                     }
