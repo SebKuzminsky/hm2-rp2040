@@ -75,7 +75,7 @@ static void set_clock_khz(void) {
 
 static void handle_lbp16(uint8_t const * const packet, size_t size, uint8_t reply_addr[4], uint16_t reply_port) {
     for (size_t i = 0; i < size; ++i) {
-        printf("0x%02x (%c) ", packet[i], packet[i]);
+        printf("0x%02x ", packet[i]);
         if (i % 8 == 7) {
             printf("\n");
         }
