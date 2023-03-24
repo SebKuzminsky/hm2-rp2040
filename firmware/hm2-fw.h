@@ -2,6 +2,10 @@
 #define HM2_FW_H
 
 
+#define HM2_GTAG_IOPORT  3
+#define HM2_GTAG_STEPGEN 5
+
+
 #define HM2_MAX_REGIONS 8
 
 
