@@ -7,7 +7,7 @@ microcontroller.
 # Implementation details
 
 The RP2040 has two cores.  This firmware uses one core for host
-communication (SPI or Ethernet) and the other core for running the
+communication (Ethernet or SPI) and the other core for running the
 hostmot2 functionality.
 
 The two cores communicate via shared memory: the 64 kB hostmot2 register
@@ -24,7 +24,7 @@ communications with the host.
 ## Endian-ness
 
 Most hm2 registers are 32 bits wide.  The registers in the register file
-are stored in native (host) byte order of the RP2040's ARM Cortex-M0
+are stored in native (host) byte order of the RP2040's ARM Cortex-M0+
 processors.  The contents of multi-byte registers are converted to the
 byte order specified by the host communication interface (if needed)
 when data is read from and written to the host.
@@ -32,11 +32,11 @@ when data is read from and written to the host.
 
 ## Limitations
 
-This architecture (eth/SPI host comm on one core, hm2 firmware on the
-other core) can't handle FIFO registers.  It would need special handling
-for FIFOs, which is currently not implemented.  This does not affect any
-of the common simple Modules, such as ioport (gpio), stepgen, pwmgen,
-or encoder.
+This architecture (Eth/SPI host communications on one core, hm2 firmware
+on the other core) can't handle FIFO registers.  It would need special
+handling for FIFOs, which is currently not implemented.  This does not
+affect any of the common simple Modules, such as ioport (gpio), stepgen,
+pwmgen, or encoder.
 
 
 
@@ -46,9 +46,14 @@ or encoder.
 
 ## Ethernet
 
-The primary targets are the Wiznet W5500-EVB-Pico and W6100-EVB-Pico,
-cheap RP2040 Pico-like boards with Ethernet:
+The primary target is the Wiznet W5500-EVB-Pico, an
+inexpensive RP2040 Pico-like boards with Ethernet:
 <https://docs.wiznet.io/Product/iEthernet/W5500/w5500-evb-pico>
+
+$10 from Digikey:
+<https://www.digikey.com/en/products/detail/wiznet/W5500-EVB-PICO/16515824>
+
+Older Wiznet boards and the upcoming W6100-EVB-Pico may also be an option:
 <https://docs.wiznet.io/Product/iEthernet/W6100/w6100-evb-pico>
 
 $18 from Mouser: <https://www.mouser.com/ProductDetail/WIZnet/W6100-EVB-PICO?qs=amGC7iS6iy9FRNAvZsvTNg%3D%3D#>
