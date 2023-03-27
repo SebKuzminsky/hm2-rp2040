@@ -35,9 +35,9 @@ void hm2_fw_run(void);
 
 
 int idrom_init(void);
-
-
+int ioport_init(void);
 int led_init(void);
+
 
 // This is a helper function to blink the LED, to show that the hostmot2
 // firmware is booting.

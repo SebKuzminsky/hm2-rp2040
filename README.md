@@ -39,6 +39,19 @@ affect any of the common simple Modules, such as ioport (gpio), stepgen,
 pwmgen, or encoder.
 
 
+## GPIO aka I/O Port
+
+The RP2040 has 29 GPIO lines.  Hostmot2 supports up to 24 GPIO lines
+per I/O Port instance, so we split the 29 GPIO lines into two I/O Port
+instances.  The first instance handles GPIOs 0-23, the second instance
+handles 24-29.
+
+The W5500-EVB-Pico board uses GPIOs 16-21 to connect to the Ethernet
+chip; GPIO 23 is not connected, and GPIO29 is connected to the +3.3V
+supply rail.  So on this board we have GPIOs 0-15 and 22 on I/O Port
+instance 0, and GPIOs 24-28 on instance 1.
+
+
 
 
 # Host connection options

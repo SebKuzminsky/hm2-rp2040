@@ -223,6 +223,7 @@ int main() {
 
     printf("Hostmot2 firwmare starting\n");
 
+    ioport_init();
     idrom_init();
     led_init();
 

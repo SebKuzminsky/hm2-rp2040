@@ -2,6 +2,7 @@ add_library(
     hostmot2_firmware
     hm2-fw.c
     idrom.c
+    ioport.c
     led.c
 )
 
