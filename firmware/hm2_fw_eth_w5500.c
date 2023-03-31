@@ -33,6 +33,133 @@ static wiz_NetInfo g_net_info = {
 };
 
 
+typedef struct {
+    uint16_t cookie;
+    uint16_t memsizes;
+    uint16_t memranges;
+    uint16_t address_pointer;
+    uint8_t spacename[9];  // It's really only 8 bytes, but it's convenient to store the terminating NULL.
+} hm2_eth_info_area_t;
+
+
+//
+// MEMSIZES arguments:
+//
+//     writable:
+//         0: read-only
+//         1: writable
+//
+//     type:
+//         01: register
+//         02: memory
+//         0E: EEPROM
+//         0F: flash
+//
+//     access (bitmap):
+//         1: 8 bit
+//         2: 16 bit
+//         4: 32 bit
+//         8: 64 bit
+//
+
+#define MEMSIZES(writable, type, access) \
+    ( \
+        (writable << 15) \
+        | (type << 8) \
+        | (access) \
+    )
+
+
+//
+// MEMRANGES arguments:
+//
+//     erase_block_size: Erase block size is 2^E.  Used for flash only,
+//         should be 0 for non-flash memory spaces.
+//
+//     page_size: Page size is 2^P.  Used for flash only, should be 0
+//         for non-flash memory spaces.
+//
+//     ps_address_range: Ps Address Range is 2^S.
+//
+
+#define MEMRANGES(erase_block_size, page_size, ps_address_range) \
+    ( \
+        (erase_block_size << 11) \
+        | (page_size << 6) \
+        | (ps_address_range) \
+    )
+
+
+hm2_eth_info_area_t eth_info_area[8] = {
+
+    {
+        .cookie = 0x5a00,
+        .memsizes = MEMSIZES(1, 1, 4),
+        .memranges = MEMRANGES(0, 0, 16),
+        .address_pointer = 0x0000,
+        .spacename = "HostMot2"
+    },
+
+    {
+        .cookie = 0x5a01,
+        .memsizes = MEMSIZES(1, 1, 2),
+        .memranges = MEMRANGES(0, 0, 8),
+        .address_pointer = 0x0000,
+        .spacename = "W5500"
+    },
+
+    {
+        .cookie = 0x5a02,
+        .memsizes = MEMSIZES(1, 0x0e, 2),
+        .memranges = MEMRANGES(0, 0, 7),
+        .address_pointer = 0x0000,
+        .spacename = "EtherEEP"
+    },
+
+    {
+        .cookie = 0x5a03,
+        .memsizes = MEMSIZES(1, 0x0f, 4),
+        .memranges = MEMRANGES(16, 8, 24),
+        .address_pointer = 0x0000,
+        .spacename = "Flash"
+    },
+
+    {
+        .cookie = 0x5a04,
+        .memsizes = MEMSIZES(1, 2, 2),
+        .memranges = MEMRANGES(0, 0, 4),
+        .address_pointer = 0x0000,
+        .spacename = "Timers"
+    },
+
+    // There is no memory space 5.
+    {
+        .cookie = 0x0000,
+        .memsizes = MEMSIZES(1, 1, 7),
+        .memranges = MEMRANGES(0, 0, 0),
+        .address_pointer = 0x0000,
+        .spacename = "unused"
+    },
+
+    {
+        .cookie = 0x5a06,
+        .memsizes = MEMSIZES(1, 2, 2),
+        .memranges = MEMRANGES(0, 0, 4),
+        .address_pointer = 0x0000,
+        .spacename = "LBP16RW"
+    },
+
+    {
+        .cookie = 0x5a07,
+        .memsizes = MEMSIZES(0, 2, 2),
+        .memranges = MEMRANGES(0, 0, 4),
+        .address_pointer = 0x0000,
+        .spacename = "LBP16RO"
+    },
+
+};
+
+
 // Read-only const board id.  From the 7i93 manual v1.0:
 // MEMORY SPACE 7 LAYOUT:
 // ADDRESS DATA
