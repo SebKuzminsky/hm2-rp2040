@@ -23,7 +23,7 @@
 #define PLL_SYS_KHZ (133 * 1000)
 
 
-static wiz_NetInfo g_net_info = {
+static wiz_NetInfo const g_net_info = {
     .mac = {0x00, 0x08, 0xDC, 0x12, 0x34, 0x56}, // MAC address
     .ip = {192, 168, 1, 121},                    // IP address
     .sn = {255, 255, 255, 0},                    // Subnet Mask
@@ -157,6 +157,58 @@ hm2_eth_info_area_t eth_info_area[8] = {
         .spacename = "LBP16RO"
     },
 
+};
+
+
+// Memory space 2: Ethernet EEPROM Chip Access
+// ADDRESS DATA
+// 0000 Reserved RO
+// 0002 MAC address LS Word RO
+// 0004 MAC address Mid Word RO
+// 0006 MAC address MS Word RO
+// 0008 Reserved RO
+// 000A Reserved RO
+// 000C Reserved RO
+// 000E Unused RO
+// 0010 CardNameChar-0,1 RO
+// 0012 CardNameChar-2,3 RO
+// 0014 CardNameChar-4,5 RO
+// 0016 CardNameChar-6,7 RO
+// 0018 CardNameChar-8,9 RO
+// 001A CardNameChar-10,11 RO
+// 001C CardNameChar-12,13 RO
+// 001E CardNameChar-14,15 RO
+// 0020 EEPROM IP address LS word RW
+// 0022 EEPROM IP address MS word RW
+// 0024 EEPROM Netmask LS word RW (V16 and > firmware)
+// 0026 EEPROM Netmask MS word RW (V16 and > firmware)
+// 0028 DEBUG LED Mode (LS bit determines HostMot2 (0) or debug(1)) RW
+// 002A Reserved RW
+// 002C Reserved RW
+// 002E Reserved RW
+// 0030..007E Unused RW
+uint8_t memory_space_2[128] = {
+    // addr 0x0000
+    0x00, 0x00,
+    g_net_info.mac[5], g_net_info.mac[4],
+    g_net_info.mac[3], g_net_info.mac[2],
+    g_net_info.mac[1], g_net_info.mac[0],
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+
+    // addr 0x0010
+    'w', '5',
+    '5', '0',
+    '0', '-',
+    'e', 'v',
+    'b', '-',
+    'p', 'i',
+    'c', 'o',
+    0x00, 0x00,
+
+    // addr 0x0020
 };
 
 
@@ -343,6 +395,11 @@ static void handle_lbp16(uint8_t const * packet, size_t size, uint8_t reply_addr
                     }
                 }
                 int32_t r = sendto(0, reply_packet, cmd.transfer_count * 4, reply_addr, reply_port);
+                break;
+            }
+
+            case 2: {
+                int32_t r = sendto(0, &memory_space_2[addr], cmd.transfer_count * cmd.transfer_bytes, reply_addr, reply_port);
                 break;
             }
 
