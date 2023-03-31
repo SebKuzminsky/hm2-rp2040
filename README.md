@@ -89,6 +89,12 @@ bits long and sent with little-endian byte order):
 
 `$ sudo tshark -i enx0023575c0964 -l -n -e ip.src -e udp.srcport -e ip.dst -e udp.dstport -e data -Tfield udp port 27181`
 
+The LinuxCNC utility program `elbpcom` is also quite useful:
+
+`$ elbpcom --address=0x104 --read=8`
+
+`$ elbpcom --address=0x200 --write 00000080`
+
 
 ## SPI
 
