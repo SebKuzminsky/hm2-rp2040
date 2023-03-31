@@ -219,7 +219,7 @@ static void handle_lbp16(uint8_t const * packet, size_t size, uint8_t reply_addr
 int main() {
     stdio_init_all();
 
-    led_blink(2, 200);
+    led_blink(4, 200);
 
     printf("Hostmot2 firwmare starting\n");
 
