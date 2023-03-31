@@ -53,7 +53,7 @@ static wiz_NetInfo g_net_info = {
 // 001E SendDoneTS from previous packet
 //
 // Only the CardName seems to be used.  Should be all uppercase.
-uint8_t memory_area_7[32] = {
+uint8_t const memory_space_7[32] = {
     "W5500-EVB-PICO"
 };
 
@@ -200,7 +200,7 @@ static void handle_lbp16(uint8_t const * packet, size_t size, uint8_t reply_addr
                     return;
                 }
 
-                memcpy(reply_packet, memory_area_7, cmd_transfer_count * 2);
+                memcpy(reply_packet, memory_space_7, cmd_transfer_count * 2);
                 int32_t r = sendto(0, (uint8_t *)reply_packet, cmd_transfer_count * 2, reply_addr, reply_port);
                 break;
             }
