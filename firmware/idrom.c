@@ -96,10 +96,10 @@ int idrom_init(void) {
     ((uint32_t*)idrom_reg)[9] = 20;  // number of pins per ioport
     ((uint32_t*)idrom_reg)[10] = 10*1000*1000;  // ClockLow
     ((uint32_t*)idrom_reg)[11] = 20*1000*1000;  // ClockHigh
-    ((uint32_t*)idrom_reg)[12] = 10;  // Instance Stride 0
-    ((uint32_t*)idrom_reg)[13] = 20;  // Instance Stride 1
-    ((uint32_t*)idrom_reg)[14] = 30;  // Register Stride 0
-    ((uint32_t*)idrom_reg)[15] = 40;  // Register Stride 1
+    ((uint32_t*)idrom_reg)[12] = 4;    // Instance Stride 0
+    ((uint32_t*)idrom_reg)[13] = 64;   // Instance Stride 1
+    ((uint32_t*)idrom_reg)[14] = 256;  // Register Stride 0
+    ((uint32_t*)idrom_reg)[15] = 256;  // Register Stride 1
 
 
     //
