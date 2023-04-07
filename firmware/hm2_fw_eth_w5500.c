@@ -201,6 +201,50 @@ static void set_clock_khz(void) {
 }
 
 
+static void handle_info_area_access(
+    lbp16_cmd_t const * const cmd,
+    uint16_t addr,
+    uint8_t const * const packet,
+    uint8_t * const reply_addr,
+    uint16_t reply_port
+) {
+    uint8_t * info_area = (uint8_t *)&eth_info_area[cmd->memory_space];
+
+    if (cmd->transfer_bytes != 2) {
+        printf("i only know how to transfer 16-bit chunks to info areas\n");
+        return;
+    }
+
+    if (cmd->memory_space == 5) {
+        printf("no info area for memory space 5\n");
+        return;
+    }
+
+    if (cmd->write) {
+        for (size_t i = 0; i < cmd->transfer_count; ++i) {
+            // Lucky us, the RP2040 is little-endian just like
+            // the LBP16 network protocol.
+            memcpy(&info_area[addr], &packet[i*cmd->transfer_bytes], cmd->transfer_bytes);
+            if (cmd->addr_increment) {
+                addr += cmd->transfer_bytes;
+            }
+        }
+    } else {
+        uint8_t reply_packet[127*cmd->transfer_bytes];
+
+        for (size_t i = 0; i < cmd->transfer_count; ++i) {
+            // Lucky us, the RP2040 is little-endian just like
+            // the LBP16 network protocol.
+            memcpy(&reply_packet[i*cmd->transfer_bytes], &info_area[addr], cmd->transfer_bytes);
+            if (cmd->addr_increment) {
+                addr += cmd->transfer_bytes;
+            }
+        }
+        int32_t r = sendto(0, reply_packet, cmd->transfer_count * cmd->transfer_bytes, reply_addr, reply_port);
+    }
+}
+
+
 static void handle_lbp16(uint8_t const * packet, size_t size, uint8_t reply_addr[4], uint16_t reply_port) {
     for (size_t i = 0; i < size; ++i) {
         printf("0x%02x ", packet[i]);
@@ -238,6 +282,15 @@ static void handle_lbp16(uint8_t const * packet, size_t size, uint8_t reply_addr
 
     if (cmd.transfer_count < 1 || cmd.transfer_count > 127) {
         printf("transfer count %d out of bounds\n", cmd.transfer_count);
+        return;
+    }
+
+    if (cmd.info_area) {
+        if (!cmd.has_addr) {
+            printf("info area access with no addr?\n");
+            return;
+        }
+        handle_info_area_access(&cmd, addr, packet, reply_addr, reply_port);
         return;
     }
 
