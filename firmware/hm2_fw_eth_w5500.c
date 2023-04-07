@@ -20,7 +20,7 @@
 #include "lbp16.h"
 
 
-#define DEBUG 0
+#define DEBUG_COMM 1
 
 
 #define PLL_SYS_KHZ (133 * 1000)
@@ -406,9 +406,6 @@ static void handle_lbp16(
     uint16_t addr;
     if (cmd->has_addr) {
         addr = data[0] | (data[1] << 8);
-#if DEBUG
-        printf("    addr: 0x%04x\n", addr);
-#endif
         data += 2;
     } else {
         // FIXME: use addr_ptr from the info area
@@ -425,6 +422,11 @@ static void handle_lbp16(
         return;
     }
 
+#if DEBUG_COMM
+    lbp16_log_cmd(cmd);
+    printf("    addr: 0x%04x\n", addr);
+#endif
+
     if (cmd->write) {
 
         switch (cmd->memory_space) {
@@ -438,8 +440,8 @@ static void handle_lbp16(
 
             case 4: {
                 size_t num_bytes = cmd->transfer_count * cmd->transfer_bytes;
-                printf("writing %d bytes to memory space 4 addr=0x%04x\n", num_bytes, addr);
-                log_bytes(data, num_bytes);
+                // printf("writing %d bytes to memory space 4 addr=0x%04x\n", num_bytes, addr);
+                // log_bytes(data, num_bytes);
                 memcpy(&memory_space_4[addr], data, cmd->transfer_count * cmd->transfer_bytes);
                 break;
             }
@@ -504,11 +506,14 @@ static void handle_lbp16(
 
 // Parse a UDP packet as one or more LBP16 commands.
 static void handle_udp(uint8_t const * packet, size_t size, uint8_t reply_addr[4], uint16_t reply_port) {
+#if DEBUG_COMM
+    log_bytes(packet, size);
+#endif
+
     ++memory_space_6[MS6_RX_UDP_COUNT];
 
     while (size > 0) {
         uint16_t raw_cmd = packet[0] | (packet[1] << 8);
-        printf("decoding cmd 0x%04x\n", raw_cmd);
         packet += 2;
         size -= 2;
 
@@ -583,7 +588,7 @@ int main() {
         uint16_t port;
 
         int32_t r = recvfrom(0, packet, sizeof(packet), addr, &port);
-#if 1
+#if DEBUG_COMM
         printf("recvfrom %d (addr=%u.%u.%u.%u, port=%u)\n", r, addr[0], addr[1], addr[2], addr[3], port);
 #endif
         handle_udp(packet, r, addr, port);
