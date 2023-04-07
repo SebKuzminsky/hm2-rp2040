@@ -13,6 +13,7 @@ typedef struct {
     int8_t transfer_bytes;
     bool addr_increment;
     uint8_t transfer_count;
+    int num_bytes;
 } lbp16_cmd_t;
 
 
@@ -49,6 +50,8 @@ static void lbp16_decode_cmd(uint16_t raw_cmd, lbp16_cmd_t * cmd) {
             cmd->transfer_bytes = -1;
             break;
     }
+
+    cmd->num_bytes = cmd->transfer_bytes * cmd->transfer_count;
 }
 
 
@@ -61,6 +64,7 @@ static void lbp16_log_cmd(lbp16_cmd_t const * const cmd) {
     printf("    transfer_size: %d (%d bytes, %d bits)\n", cmd->transfer_size, cmd->transfer_bytes, cmd->transfer_bits);
     printf("    addr_increment: %d\n", cmd->addr_increment);
     printf("    transfer_count: %d\n", cmd->transfer_count);
+    printf("    num_bytes: %d\n", cmd->num_bytes);
 }
 
 
