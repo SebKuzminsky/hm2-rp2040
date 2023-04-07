@@ -49,7 +49,19 @@ static void lbp16_decode_cmd(uint16_t raw_cmd, lbp16_cmd_t * cmd) {
             cmd->transfer_bytes = -1;
             break;
     }
-
 }
+
+
+static void lbp16_log_cmd(lbp16_cmd_t const * const cmd) {
+    printf("lbp16 cmd 0x%04x\n", cmd->raw);
+    printf("    write: %d\n", cmd->write);
+    printf("    has_addr: %d\n", cmd->has_addr);
+    printf("    info_area: %d\n", cmd->info_area);
+    printf("    memory_space: %d\n", cmd->memory_space);
+    printf("    transfer_size: %d (%d bytes, %d bits)\n", cmd->transfer_size, cmd->transfer_bytes, cmd->transfer_bits);
+    printf("    addr_increment: %d\n", cmd->addr_increment);
+    printf("    transfer_count: %d\n", cmd->transfer_count);
+}
+
 
 #endif // LBP16_H
