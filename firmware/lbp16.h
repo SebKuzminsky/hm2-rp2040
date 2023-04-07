@@ -3,6 +3,7 @@
 
 
 typedef struct {
+    uint16_t raw;
     bool write;
     bool has_addr;
     bool info_area;
@@ -16,6 +17,7 @@ typedef struct {
 
 
 static void lbp16_decode_cmd(uint16_t raw_cmd, lbp16_cmd_t * cmd) {
+    cmd->raw = raw_cmd;
     cmd->write = raw_cmd & 0x8000;
     cmd->has_addr = raw_cmd & 0x4000;
     cmd->info_area = raw_cmd & 0x2000;
