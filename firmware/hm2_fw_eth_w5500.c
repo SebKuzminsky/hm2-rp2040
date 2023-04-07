@@ -20,6 +20,9 @@
 #include "lbp16.h"
 
 
+#define DEBUG 0
+
+
 #define PLL_SYS_KHZ (133 * 1000)
 
 
@@ -296,132 +299,127 @@ static void handle_info_area_access(
     }
 }
 
-
-static void handle_lbp16(uint8_t const * packet, size_t size, uint8_t reply_addr[4], uint16_t reply_port) {
-    for (size_t i = 0; i < size; ++i) {
-        printf("0x%02x ", packet[i]);
-        if (i % 8 == 7) {
-            printf("\n");
-        }
-    }
-    printf("\n");
-
-    uint16_t raw_cmd = packet[0] | (packet[1] << 8);
-    printf("decoding cmd 0x%04x\n", raw_cmd);
-    packet += 2;
-
-    lbp16_cmd_t cmd;
-
-    lbp16_decode_cmd(raw_cmd, &cmd);
-
-    printf("    write: %d\n", cmd.write);
-    printf("    has_addr: %d\n", cmd.has_addr);
-    printf("    info_area: %d\n", cmd.info_area);
-    printf("    memory_space: %d\n", cmd.memory_space);
-    printf("    transfer_size: %d (%d bytes, %d bits)\n", cmd.transfer_size, cmd.transfer_bytes, cmd.transfer_bits);
-    printf("    addr_increment: %d\n", cmd.addr_increment);
-    printf("    transfer_count: %d\n", cmd.transfer_count);
+static void handle_lbp16(
+    lbp16_cmd_t const * const cmd,
+    uint8_t const * data,
+    uint8_t reply_addr[4],
+    uint16_t reply_port
+) {
 
     uint16_t addr;
-    if (cmd.has_addr) {
-        addr = packet[0] | (packet[1] << 8);
+    if (cmd->has_addr) {
+        addr = data[0] | (data[1] << 8);
+#if DEBUG
         printf("    addr: 0x%04x\n", addr);
-        packet += 2;
+#endif
+        data += 2;
     } else {
         // FIXME: use addr_ptr from the info area
         printf("no addr??\n");
         return;
     }
 
-    if (cmd.transfer_count < 1 || cmd.transfer_count > 127) {
-        printf("transfer count %d out of bounds\n", cmd.transfer_count);
-        return;
-    }
-
-    if (cmd.info_area) {
-        if (!cmd.has_addr) {
+    if (cmd->info_area) {
+        if (!cmd->has_addr) {
             printf("info area access with no addr?\n");
             return;
         }
-        handle_info_area_access(&cmd, addr, packet, reply_addr, reply_port);
+        handle_info_area_access(cmd, addr, data, reply_addr, reply_port);
         return;
     }
 
-    if (cmd.write) {
+    if (cmd->write) {
 
-        switch (cmd.memory_space) {
+        switch (cmd->memory_space) {
 
             case 0: {
-                if (cmd.transfer_size != 2) {
-                    printf("i only know how to write 32-bit chunks to memory area 0\n");
-                    return;
-                }
-
-                for (size_t i = 0; i < cmd.transfer_count; ++i) {
-                    // Lucky us, the RP2040 is little-endian just like
-                    // the LBP16 network protocol.
-                    memcpy(&hm2_register_file[addr], &packet[i*4], 4);
-                    if (cmd.addr_increment) {
-                        addr += 4;
-                    }
-                }
-
+                // Lucky us, the RP2040 is little-endian just like
+                // the LBP16 network protocol.
+                memcpy(&hm2_register_file[addr], data, cmd->transfer_count * cmd->transfer_bytes);
                 break;
             }
 
             default: {
-                printf("can't write to memory space %d\n", cmd.memory_space);
+                printf("can't write to memory space %d\n", cmd->memory_space);
                 break;
             }
         }
 
     } else {
-        uint8_t reply_packet[127*4];
 
-        switch (cmd.memory_space) {
+        switch (cmd->memory_space) {
 
             case 0: {
-                if (cmd.transfer_size != 2) {
-                    printf("i only know how to read 32-bit chunks from memory area 0\n");
-                    return;
-                }
-
-                for (size_t i = 0; i < cmd.transfer_count; ++i) {
-                    // Lucky us, the RP2040 is little-endian just like
-                    // the LBP16 network protocol.
-                    memcpy(&reply_packet[i*4], &hm2_register_file[addr], 4);
-                    if (cmd.addr_increment) {
-                        addr += 4;
-                    }
-                }
-                int32_t r = sendto(0, reply_packet, cmd.transfer_count * 4, reply_addr, reply_port);
+                // Lucky us, the RP2040 is little-endian just like
+                // the LBP16 network protocol.
+                int32_t r = sendto(0, &hm2_register_file[addr], cmd->transfer_count * cmd->transfer_bytes, reply_addr, reply_port);
                 break;
             }
 
             case 2: {
-                int32_t r = sendto(0, &memory_space_2[addr], cmd.transfer_count * cmd.transfer_bytes, reply_addr, reply_port);
+                int32_t r = sendto(0, &memory_space_2[addr], cmd->transfer_count * cmd->transfer_bytes, reply_addr, reply_port);
                 break;
             }
 
             case 7: {
-                if (cmd.transfer_size != 1) {
-                    printf("i only know how to transfer 16-bit chunks from memory area 7\n");
-                    return;
-                }
-
-                memcpy(reply_packet, memory_space_7, cmd.transfer_count * 2);
-                int32_t r = sendto(0, (uint8_t *)reply_packet, cmd.transfer_count * 2, reply_addr, reply_port);
+                int32_t r = sendto(0, (uint8_t *)&memory_space_7[addr], cmd->transfer_count * cmd->transfer_bytes, reply_addr, reply_port);
                 break;
             }
 
             default: {
-                printf("can't read from memory space %d\n", cmd.memory_space);
+                printf("can't read from memory space %d\n", cmd->memory_space);
                 break;
             }
 
         }
     }
 
+}
+
+
+// Parse a UDP packet as one or more LBP16 commands.
+static void handle_udp(uint8_t const * packet, size_t size, uint8_t reply_addr[4], uint16_t reply_port) {
+    while (size > 0) {
+        uint16_t raw_cmd = packet[0] | (packet[1] << 8);
+        printf("decoding cmd 0x%04x\n", raw_cmd);
+        packet += 2;
+        size -= 2;
+
+        lbp16_cmd_t cmd;
+        lbp16_decode_cmd(raw_cmd, &cmd);
+
+#if DEBUG
+        printf("    write: %d\n", cmd.write);
+        printf("    has_addr: %d\n", cmd.has_addr);
+        printf("    info_area: %d\n", cmd.info_area);
+        printf("    memory_space: %d\n", cmd.memory_space);
+        printf("    transfer_size: %d (%d bytes, %d bits)\n", cmd.transfer_size, cmd.transfer_bytes, cmd.transfer_bits);
+        printf("    addr_increment: %d\n", cmd.addr_increment);
+        printf("    transfer_count: %d\n", cmd.transfer_count);
+#endif
+
+        if (cmd.transfer_count < 1 || cmd.transfer_count > 127) {
+            printf("transfer count %d out of bounds\n", cmd.transfer_count);
+            return;
+        }
+
+        int bytes_needed = 0;
+        if (cmd.has_addr) {
+            bytes_needed += 2;
+        }
+        if (cmd.write) {
+            bytes_needed += cmd.transfer_count * cmd.transfer_bytes;
+        }
+        if (size < bytes_needed) {
+            printf("lbp16 command doesn't have enough data");
+            return;
+        }
+
+        handle_lbp16(&cmd, packet, reply_addr, reply_port);
+
+        packet += bytes_needed;
+        size -= bytes_needed;
+    }
 }
 
 
@@ -457,7 +455,6 @@ int main() {
 
 
     int8_t sock = socket(0, Sn_MR_UDP, 27181, 0);
-    printf("socket %d\n", sock);
 
     while (true) {
         uint8_t packet[1024];
@@ -465,7 +462,9 @@ int main() {
         uint16_t port;
 
         int32_t r = recvfrom(0, packet, sizeof(packet), addr, &port);
+#if 1
         printf("recvfrom %d (addr=%u.%u.%u.%u, port=%u)\n", r, addr[0], addr[1], addr[2], addr[3], port);
-        handle_lbp16(packet, r, addr, port);
+#endif
+        handle_udp(packet, r, addr, port);
     }
 }
