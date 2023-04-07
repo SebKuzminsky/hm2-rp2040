@@ -215,6 +215,48 @@ uint8_t memory_space_2[128] = {
 };
 
 
+// SPACE 4 LBP TIMER/UTILITY AREA
+//
+// Address space 4 is for read/write access to LBP specific timing registers. All
+// memory space 4 access is 16 bit.
+//
+// MEMORY SPACE 4 LAYOUT:
+// ADDRESS DATA
+// 0000 uSTimeStampReg
+// 0002 WaituSReg
+// 0004 HM2Timeout
+// 0006 WaitForHM2RefTime
+// 0008 WaitForHM2Timer1
+// 000A WaitForHM2Timer2
+// 000C WaitForHM2Timer3
+// 000E WaitForHM2Timer4
+// 0010..001E Scratch registers for any use
+//
+// The uSTimeStamp register reads the free running hardware microsecond
+// timer. It is useful for timing internal 7I80 operations. Writes to
+// the uSTimeStamp register are a no- op.
+//
+// The WaituS register delays processing for the specified number of
+// microseconds when written, (0 to 65535 uS) reads return the last wait
+// time written.
+//
+// The HM2TimeOut register sets the timeout value for all WaitForHM2 times
+// (0 to 65536 uS).
+//
+// All the WaitForHM2Timer registers wait for the rising edge of the
+// specified timer or reference output when read or written, write data
+// is don’t care, and reads return the wait time in uS.
+//
+// The HM2TimeOut register places an upper bound on how long the
+// WaitForHM2 operations will wait. HM2Timeouts set the HM2TImeout error
+// bit in the error register.
+
+uint8_t memory_space_4[32] = {
+    // addr 0x0000
+    0x00, 0x00,
+};
+
+
 // Read-only const board id.  From the 7i93 manual v1.0:
 // MEMORY SPACE 7 LAYOUT:
 // ADDRESS DATA
@@ -353,6 +395,14 @@ static void handle_lbp16(
                 break;
             }
 
+            case 4: {
+                size_t num_bytes = cmd->transfer_count * cmd->transfer_bytes;
+                printf("writing %d bytes to memory space 4 addr=0x%04x\n", num_bytes, addr);
+                log_bytes(data, num_bytes);
+                memcpy(&memory_space_4[addr], data, cmd->transfer_count * cmd->transfer_bytes);
+                break;
+            }
+
             default: {
                 printf("can't write to memory space %d\n", cmd->memory_space);
                 break;
@@ -372,6 +422,11 @@ static void handle_lbp16(
 
             case 2: {
                 int32_t r = sendto(0, &memory_space_2[addr], cmd->transfer_count * cmd->transfer_bytes, reply_addr, reply_port);
+                break;
+            }
+
+            case 4: {
+                int32_t r = sendto(0, &memory_space_4[addr], cmd->transfer_count * cmd->transfer_bytes, reply_addr, reply_port);
                 break;
             }
 
