@@ -276,6 +276,7 @@ static void handle_lbp16(uint8_t const * packet, size_t size, uint8_t reply_addr
         printf("    addr: 0x%04x\n", addr);
         packet += 2;
     } else {
+        // FIXME: use addr_ptr from the info area
         printf("no addr??\n");
         return;
     }
