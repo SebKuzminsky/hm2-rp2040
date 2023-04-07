@@ -457,16 +457,6 @@ static void handle_udp(uint8_t const * packet, size_t size, uint8_t reply_addr[4
         lbp16_cmd_t cmd;
         lbp16_decode_cmd(raw_cmd, &cmd);
 
-#if DEBUG
-        printf("    write: %d\n", cmd.write);
-        printf("    has_addr: %d\n", cmd.has_addr);
-        printf("    info_area: %d\n", cmd.info_area);
-        printf("    memory_space: %d\n", cmd.memory_space);
-        printf("    transfer_size: %d (%d bytes, %d bits)\n", cmd.transfer_size, cmd.transfer_bytes, cmd.transfer_bits);
-        printf("    addr_increment: %d\n", cmd.addr_increment);
-        printf("    transfer_count: %d\n", cmd.transfer_count);
-#endif
-
         if (cmd.transfer_count < 1 || cmd.transfer_count > 127) {
             printf("transfer count %d out of bounds\n", cmd.transfer_count);
             return;
