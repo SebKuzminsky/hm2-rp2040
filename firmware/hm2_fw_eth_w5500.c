@@ -206,7 +206,7 @@ static void handle_lbp16(uint8_t const * packet, size_t size, uint8_t reply_addr
             }
 
             default: {
-                printf("can't read from  memory space %d\n", cmd_memory_space);
+                printf("can't read from memory space %d\n", cmd_memory_space);
                 break;
             }
 
