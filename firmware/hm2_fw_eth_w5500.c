@@ -256,6 +256,20 @@ static void set_clock_khz(void) {
 }
 
 
+static void log_bytes(uint8_t const * const data, size_t num_bytes) {
+    size_t i;
+    for (i = 0; i < num_bytes; ++i) {
+        printf("0x%02x ", data[i]);
+        if (i % 8 == 7) {
+            printf("\n");
+        }
+    }
+    if (i % 8 != 7) {
+        printf("\n");
+    }
+}
+
+
 static void handle_info_area_access(
     lbp16_cmd_t const * const cmd,
     uint16_t addr,
