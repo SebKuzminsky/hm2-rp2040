@@ -20,7 +20,7 @@
 #include "lbp16.h"
 
 
-#define DEBUG_COMM 1
+#define DEBUG_COMM 0
 
 
 #define PLL_SYS_KHZ (133 * 1000)
@@ -399,6 +399,11 @@ static int handle_lbp16(
         return 0;
     }
 
+#if DEBUG_COMM
+    lbp16_log_cmd(cmd);
+    printf("    addr: 0x%04x\n", addr);
+#endif
+
     if (cmd->info_area) {
         if (!cmd->has_addr) {
             printf("info area access with no addr?\n");
@@ -406,11 +411,6 @@ static int handle_lbp16(
         }
         return handle_info_area_access(cmd, addr, data, reply_packet);
     }
-
-#if DEBUG_COMM
-    lbp16_log_cmd(cmd);
-    printf("    addr: 0x%04x\n", addr);
-#endif
 
     // Lucky us, the RP2040 is little-endian just like the LBP16 network
     // protocol.
@@ -509,6 +509,9 @@ static void handle_udp(uint8_t const * packet, size_t size, uint8_t reply_addr[4
         }
 
         int r = handle_lbp16(&cmd, packet, &reply_packet[reply_packet_offset]);
+#if DEBUG_COMM
+        printf("that lbp16 cmd added %d bytes to the reply\n", r);
+#endif
         reply_packet_offset += r;
 
         packet += bytes_needed;
