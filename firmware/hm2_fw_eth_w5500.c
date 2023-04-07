@@ -353,54 +353,40 @@ static void log_bytes(uint8_t const * const data, size_t num_bytes) {
 }
 
 
-static void handle_info_area_access(
+static int handle_info_area_access(
     lbp16_cmd_t const * const cmd,
     uint16_t addr,
-    uint8_t const * const packet,
-    uint8_t * const reply_addr,
-    uint16_t reply_port
+    uint8_t const * const data,
+    uint8_t * reply_packet
 ) {
     uint8_t * info_area = (uint8_t *)&eth_info_area[cmd->memory_space];
 
     if (cmd->transfer_bytes != 2) {
         printf("i only know how to transfer 16-bit chunks to info areas\n");
-        return;
+        return 0;
     }
 
     if (cmd->memory_space == 5) {
         printf("no info area for memory space 5\n");
-        return;
+        return 0;
     }
 
+    // Lucky us, the RP2040 is little-endian just like the LBP16 network
+    // protocol.
     if (cmd->write) {
-        for (size_t i = 0; i < cmd->transfer_count; ++i) {
-            // Lucky us, the RP2040 is little-endian just like
-            // the LBP16 network protocol.
-            memcpy(&info_area[addr], &packet[i*cmd->transfer_bytes], cmd->transfer_bytes);
-            if (cmd->addr_increment) {
-                addr += cmd->transfer_bytes;
-            }
-        }
+        memcpy(&info_area[addr], data, cmd->num_bytes);
+        return 0;
     } else {
-        uint8_t reply_packet[127*cmd->transfer_bytes];
-
-        for (size_t i = 0; i < cmd->transfer_count; ++i) {
-            // Lucky us, the RP2040 is little-endian just like
-            // the LBP16 network protocol.
-            memcpy(&reply_packet[i*cmd->transfer_bytes], &info_area[addr], cmd->transfer_bytes);
-            if (cmd->addr_increment) {
-                addr += cmd->transfer_bytes;
-            }
-        }
-        int32_t r = sendto(0, reply_packet, cmd->transfer_count * cmd->transfer_bytes, reply_addr, reply_port);
+        memcpy(reply_packet, &info_area[addr], cmd->num_bytes);
+        return cmd->num_bytes;
     }
 }
 
-static void handle_lbp16(
+
+static int handle_lbp16(
     lbp16_cmd_t const * const cmd,
     uint8_t const * data,
-    uint8_t reply_addr[4],
-    uint16_t reply_port
+    uint8_t * reply_packet
 ) {
 
     uint16_t addr;
@@ -410,16 +396,15 @@ static void handle_lbp16(
     } else {
         // FIXME: use addr_ptr from the info area
         printf("no addr??\n");
-        return;
+        return 0;
     }
 
     if (cmd->info_area) {
         if (!cmd->has_addr) {
             printf("info area access with no addr?\n");
-            return;
+            return 0;
         }
-        handle_info_area_access(cmd, addr, data, reply_addr, reply_port);
-        return;
+        return handle_info_area_access(cmd, addr, data, reply_packet);
     }
 
 #if DEBUG_COMM
@@ -427,85 +412,67 @@ static void handle_lbp16(
     printf("    addr: 0x%04x\n", addr);
 #endif
 
+    // Lucky us, the RP2040 is little-endian just like the LBP16 network
+    // protocol.
+
     if (cmd->write) {
+        uint8_t * dest;
 
         switch (cmd->memory_space) {
-
-            case 0: {
-                // Lucky us, the RP2040 is little-endian just like
-                // the LBP16 network protocol.
-                memcpy(&hm2_register_file[addr], data, cmd->transfer_count * cmd->transfer_bytes);
+            case 0:
+                dest = hm2_register_file;
                 break;
-            }
-
-            case 4: {
-                size_t num_bytes = cmd->transfer_count * cmd->transfer_bytes;
-                // printf("writing %d bytes to memory space 4 addr=0x%04x\n", num_bytes, addr);
-                // log_bytes(data, num_bytes);
-                memcpy(&memory_space_4[addr], data, cmd->transfer_count * cmd->transfer_bytes);
+            case 4:
+                dest = memory_space_4;
                 break;
-            }
-
-            case 6: {
-                size_t num_bytes = cmd->transfer_count * cmd->transfer_bytes;
-                // printf("writing %d bytes to memory space 6 addr=0x%04x\n", num_bytes, addr);
-                // log_bytes(data, num_bytes);
-                memcpy(&((uint8_t *)(&memory_space_6))[addr], data, num_bytes);
+            case 6:
+                dest = (uint8_t *)memory_space_6;
                 break;
-            }
-
-            default: {
+            default:
                 printf("can't write to memory space %d, addr=0x%04x\n", cmd->memory_space, addr);
                 lbp16_log_cmd(cmd);
                 break;
-            }
         }
+        memcpy(&dest[addr], data, cmd->num_bytes);
+        return 0;
 
     } else {
+        uint8_t * src;
 
         switch (cmd->memory_space) {
-
-            case 0: {
-                // Lucky us, the RP2040 is little-endian just like
-                // the LBP16 network protocol.
-                int32_t r = sendto(0, &hm2_register_file[addr], cmd->transfer_count * cmd->transfer_bytes, reply_addr, reply_port);
+            case 0:
+                src = hm2_register_file;
                 break;
-            }
-
-            case 2: {
-                int32_t r = sendto(0, &memory_space_2[addr], cmd->transfer_count * cmd->transfer_bytes, reply_addr, reply_port);
+            case 2:
+                src = memory_space_2;
                 break;
-            }
-
-            case 4: {
-                int32_t r = sendto(0, &memory_space_4[addr], cmd->transfer_count * cmd->transfer_bytes, reply_addr, reply_port);
+            case 4:
+                src = memory_space_4;
                 break;
-            }
-
-            case 6: {
-                int32_t r = sendto(0, &((uint8_t *)(&memory_space_6))[addr], cmd->transfer_count * cmd->transfer_bytes, reply_addr, reply_port);
+            case 6:
+                src = (uint8_t *)memory_space_6;
                 break;
-            }
-
-            case 7: {
-                int32_t r = sendto(0, (uint8_t *)&memory_space_7[addr], cmd->transfer_count * cmd->transfer_bytes, reply_addr, reply_port);
+            case 7:
+                src = (uint8_t *)memory_space_7;
                 break;
-            }
-
-            default: {
+            default:
                 printf("can't read from memory space %d, addr=0x%04x\n", cmd->memory_space, addr);
                 lbp16_log_cmd(cmd);
                 break;
-            }
-
         }
-    }
 
+        memcpy(reply_packet, &src[addr], cmd->num_bytes);
+        ++memory_space_6[MS6_TX_PKT_COUNT];
+        return cmd->num_bytes;
+    }
 }
 
 
 // Parse a UDP packet as one or more LBP16 commands.
 static void handle_udp(uint8_t const * packet, size_t size, uint8_t reply_addr[4], uint16_t reply_port) {
+    uint8_t reply_packet[1450];
+    size_t reply_packet_offset = 0;
+
 #if DEBUG_COMM
     log_bytes(packet, size);
 #endif
@@ -533,7 +500,7 @@ static void handle_udp(uint8_t const * packet, size_t size, uint8_t reply_addr[4
             bytes_needed += 2;
         }
         if (cmd.write) {
-            bytes_needed += cmd.transfer_count * cmd.transfer_bytes;
+            bytes_needed += cmd.num_bytes;
         }
         if (size < bytes_needed) {
             printf("lbp16 command doesn't have enough data");
@@ -541,10 +508,16 @@ static void handle_udp(uint8_t const * packet, size_t size, uint8_t reply_addr[4
             return;
         }
 
-        handle_lbp16(&cmd, packet, reply_addr, reply_port);
+        int r = handle_lbp16(&cmd, packet, &reply_packet[reply_packet_offset]);
+        reply_packet_offset += r;
 
         packet += bytes_needed;
         size -= bytes_needed;
+    }
+
+    if (reply_packet_offset > 0) {
+        int32_t r = sendto(0, reply_packet, reply_packet_offset, reply_addr, reply_port);
+        ++memory_space_6[MS6_TX_UDP_COUNT];
     }
 }
 
