@@ -5,6 +5,8 @@
 #define HM2_GTAG_IOPORT  3
 #define HM2_GTAG_STEPGEN 5
 
+#define HM2_GTAG_END     0
+
 
 #define HM2_MAX_REGIONS 8
 

@@ -131,6 +131,18 @@ int idrom_init(void) {
     // MPBitmap(1)     (Double) = bit map of which registers are multiple
     //                 '1' = multiple, LSb = reg(0)
     //
+    // The `Strides` byte specifies which of the two available
+    // InstanceStrides and RegisterStrides this module uses.  The bits
+    // are:
+    //     MSB         LSB
+    //     x x I I x x R R
+    //
+    //     II == 0 for InstanceStride0
+    //     II == 1 for InstanceStride1
+    //     RR == 0 for RegisterStride0
+    //     RR == 1 for RegisterStride1
+    //
+
 
     uint8_t * md_reg = hm2_fw_register("module-descriptors", 0x0440, 0x40, NULL);
     if (md_reg == NULL) {
@@ -139,19 +151,21 @@ int idrom_init(void) {
 
     md_reg[0] = HM2_GTAG_IOPORT;  // gtag
     md_reg[1] = 0;                // version
-    md_reg[2] = 0;                // which clock to use
+    md_reg[2] = 1;                // which clock to use
     md_reg[3] = 1;                // number of instances
 
     md_reg[4] = 0x00;             // base address
     md_reg[5] = 0x10;             //
 
     md_reg[6] = 5;                // number of registers
-    md_reg[7] = 4;                // "instance stride", offset between registers of adjacent instances/channels of this module
+    md_reg[7] = 0x00;             // use InstanceStride0 (4) and RegisterStride0 (256)
 
-    md_reg[8] = 0x00;             // bitmap of which registers are per-channel
+    md_reg[8] = 0x1f;             // bitmap of which registers are per-channel
     md_reg[9] = 0x00;             //
     md_reg[10] = 0x00;            //
-    md_reg[11] = 0x1f;            //
+    md_reg[11] = 0x00;            //
+
+    md_reg[12] = HM2_GTAG_END;    // gtag
 
 
     //
