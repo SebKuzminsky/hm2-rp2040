@@ -404,7 +404,8 @@ static void handle_lbp16(
             }
 
             default: {
-                printf("can't write to memory space %d\n", cmd->memory_space);
+                printf("can't write to memory space %d, addr=0x%04x\n", cmd->memory_space, addr);
+                lbp16_log_cmd(cmd);
                 break;
             }
         }
@@ -436,7 +437,8 @@ static void handle_lbp16(
             }
 
             default: {
-                printf("can't read from memory space %d\n", cmd->memory_space);
+                printf("can't read from memory space %d, addr=0x%04x\n", cmd->memory_space, addr);
+                lbp16_log_cmd(cmd);
                 break;
             }
 
