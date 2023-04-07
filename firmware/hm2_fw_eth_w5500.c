@@ -257,6 +257,47 @@ uint8_t memory_space_4[32] = {
 };
 
 
+
+
+#define MS6_ERROR             0
+#define MS6_LBP_PARSE_ERRORS  1
+#define MS6_LBP_MEM_ERRORS    2
+#define MS6_LBP_WRITE_ERRORS  3
+#define MS6_RX_PKT_COUNT      4
+#define MS6_RX_UDP_COUNT      5
+#define MS6_RX_BAD_COUNT      6
+#define MS6_TX_PKT_COUNT      7
+#define MS6_TX_UDP_COUNT      8
+#define MS6_TX_BAD_COUNT      9
+#define MS6_LED_MODE         10
+#define MS6_DEBUG_LED_PTR    11
+#define MS6_SCRATCH          12
+#define MS6_EEPROM_WENA      14
+#define MS6_RESET            15
+
+uint16_t memory_space_6[16] = {
+    // addr 0x0000
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+
+    // addr 0x0010
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000
+};
+
+
 // Read-only const board id.  From the 7i93 manual v1.0:
 // MEMORY SPACE 7 LAYOUT:
 // ADDRESS DATA
@@ -403,6 +444,14 @@ static void handle_lbp16(
                 break;
             }
 
+            case 6: {
+                size_t num_bytes = cmd->transfer_count * cmd->transfer_bytes;
+                // printf("writing %d bytes to memory space 6 addr=0x%04x\n", num_bytes, addr);
+                // log_bytes(data, num_bytes);
+                memcpy(&((uint8_t *)(&memory_space_6))[addr], data, num_bytes);
+                break;
+            }
+
             default: {
                 printf("can't write to memory space %d, addr=0x%04x\n", cmd->memory_space, addr);
                 lbp16_log_cmd(cmd);
@@ -431,6 +480,11 @@ static void handle_lbp16(
                 break;
             }
 
+            case 6: {
+                int32_t r = sendto(0, &((uint8_t *)(&memory_space_6))[addr], cmd->transfer_count * cmd->transfer_bytes, reply_addr, reply_port);
+                break;
+            }
+
             case 7: {
                 int32_t r = sendto(0, (uint8_t *)&memory_space_7[addr], cmd->transfer_count * cmd->transfer_bytes, reply_addr, reply_port);
                 break;
@@ -450,6 +504,8 @@ static void handle_lbp16(
 
 // Parse a UDP packet as one or more LBP16 commands.
 static void handle_udp(uint8_t const * packet, size_t size, uint8_t reply_addr[4], uint16_t reply_port) {
+    ++memory_space_6[MS6_RX_UDP_COUNT];
+
     while (size > 0) {
         uint16_t raw_cmd = packet[0] | (packet[1] << 8);
         printf("decoding cmd 0x%04x\n", raw_cmd);
@@ -459,8 +515,11 @@ static void handle_udp(uint8_t const * packet, size_t size, uint8_t reply_addr[4
         lbp16_cmd_t cmd;
         lbp16_decode_cmd(raw_cmd, &cmd);
 
+        ++memory_space_6[MS6_RX_PKT_COUNT];
+
         if (cmd.transfer_count < 1 || cmd.transfer_count > 127) {
             printf("transfer count %d out of bounds\n", cmd.transfer_count);
+            ++memory_space_6[MS6_RX_BAD_COUNT];
             return;
         }
 
@@ -473,6 +532,7 @@ static void handle_udp(uint8_t const * packet, size_t size, uint8_t reply_addr[4
         }
         if (size < bytes_needed) {
             printf("lbp16 command doesn't have enough data");
+            ++memory_space_6[MS6_RX_BAD_COUNT];
             return;
         }
 
