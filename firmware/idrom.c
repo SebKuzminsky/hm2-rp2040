@@ -48,7 +48,7 @@ int idrom_init(void) {
     // ("HOSTMOT2"), at 0x0100.
     //
 
-    uint8_t * id_reg = hm2_fw_register("id", 0x0100, 16, NULL);
+    uint8_t * id_reg = hm2_fw_register("id", 0x0100, 16, NULL, NULL, NULL);
     if (id_reg == NULL) {
         return -1;
     }
@@ -70,7 +70,7 @@ int idrom_init(void) {
     // and pointers to the Module Descriptors and Pin Descriptors.
     //
 
-    uint8_t * idrom_reg = hm2_fw_register("idrom", 0x0400, 0x40, NULL);
+    uint8_t * idrom_reg = hm2_fw_register("idrom", 0x0400, 0x40, NULL, NULL, NULL);
     if (idrom_reg == NULL) {
         return -1;
     }
@@ -144,7 +144,7 @@ int idrom_init(void) {
     //
 
 
-    uint8_t * md_reg = hm2_fw_register("module-descriptors", 0x0440, 0x40, NULL);
+    uint8_t * md_reg = hm2_fw_register("module-descriptors", 0x0440, 0x40, NULL, NULL, NULL);
     if (md_reg == NULL) {
         return -1;
     }
@@ -204,7 +204,7 @@ int idrom_init(void) {
 
 #define PIN_DESCRIPTOR(secondary_pin, secondary_tag, secondary_unit, primary_tag) (uint32_t)((primary_tag << 24) | (secondary_unit << 16) | (secondary_tag << 8) | (secondary_pin))
 
-    uint8_t * pd_reg = hm2_fw_register("pin-descriptors", 0x0600, 0x40, NULL);
+    uint8_t * pd_reg = hm2_fw_register("pin-descriptors", 0x0600, 0x40, NULL, NULL, NULL);
     if (pd_reg == NULL) {
         return -1;
     }

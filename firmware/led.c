@@ -14,6 +14,14 @@ static void led_update(void) {
 }
 
 
+static void led_write(uint16_t addr, uint32_t val) {
+}
+
+
+static uint32_t led_read(uint16_t addr) {
+}
+
+
 static void led_setup_once(void) {
     static bool initialized = false;
     if (!initialized) {
@@ -43,7 +51,7 @@ int led_init(void) {
 
     led_blink(2, 100);
 
-    reg = (uint32_t const *)hm2_fw_register("led", 0x0200, 4, led_update);
+    reg = (uint32_t const *)hm2_fw_register("led", 0x0200, 4, led_update, led_write, led_read);
     if (reg == NULL) {
         return -1;
     }

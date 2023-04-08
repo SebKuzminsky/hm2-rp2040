@@ -15,7 +15,16 @@ typedef struct {
     char const * name;
     uint16_t addr;
     size_t size;
+
+    // This gets called frequently to do any ongoing processing that
+    // the module needs.
     void (*update)(void);
+
+    // This gets called when a write to a module register happens.
+    void (*write)(uint16_t addr, uint32_t val);
+
+    // This gets called when a read from a module register happens.
+    uint32_t (*read)(uint16_t addr);
 } hm2_region_t;
 
 extern hm2_region_t hm2_region[HM2_MAX_REGIONS];
@@ -29,7 +38,9 @@ uint8_t * hm2_fw_register(
     char const * const name,
     uint16_t const addr,
     size_t const size,
-    void (*update)(void)
+    void (*update)(void),
+    void (*write)(uint16_t addr, uint32_t val),
+    uint32_t (*read)(uint16_t addr)
 );
 
 

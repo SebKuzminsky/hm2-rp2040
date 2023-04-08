@@ -15,7 +15,9 @@ uint8_t * hm2_fw_register(
     char const * name,
     uint16_t addr,
     size_t size,
-    void (*update)(void)
+    void (*module_update)(void),
+    void (*module_write)(uint16_t addr, uint32_t val),
+    uint32_t (*module_read)(uint16_t addr)
 ) {
     // Register a handler for a region of the address space.
     if (hm2_num_regions >= HM2_MAX_REGIONS) {
@@ -28,7 +30,9 @@ uint8_t * hm2_fw_register(
     hm2_region[hm2_num_regions].name = name;
     hm2_region[hm2_num_regions].addr = addr;
     hm2_region[hm2_num_regions].size = size;
-    hm2_region[hm2_num_regions].update = update;
+    hm2_region[hm2_num_regions].update = module_update;
+    hm2_region[hm2_num_regions].write = module_write;
+    hm2_region[hm2_num_regions].read = module_read;
 
     ++hm2_num_regions;
 

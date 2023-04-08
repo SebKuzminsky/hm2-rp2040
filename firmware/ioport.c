@@ -79,6 +79,14 @@ static void ioport_update(void) {
 }
 
 
+static void ioport_write(uint16_t addr, uint32_t val) {
+}
+
+
+static uint32_t ioport_read(uint16_t addr) {
+}
+
+
 int ioport_init(void) {
     for (size_t i = 0; i < 29; ++i) {
         int instance = i / 24;
@@ -93,7 +101,7 @@ int ioport_init(void) {
         }
     }
 
-    reg = (uint32_t *)hm2_fw_register("ioport", 0x1000, 0x500, ioport_update);
+    reg = (uint32_t *)hm2_fw_register("ioport", 0x1000, 0x500, ioport_update, ioport_write, ioport_read);
     if (reg == NULL) {
         return -1;
     }
