@@ -76,6 +76,21 @@ uint8_t * hm2_fw_register(
 // Returns 0 on success.
 
 int hm2_fw_read(uint16_t addr, uint32_t * buf, size_t num_uint32) {
+    for (size_t i = 0; i < hm2_num_regions; ++i) {
+        if (
+            (addr >= hm2_region[i].addr)
+            && ((addr + (num_uint32 * 4)) < (hm2_region[i].addr + hm2_region[i].size))
+        ) {
+            if (hm2_region[i].read != NULL) {
+                return hm2_region[i].read(addr - hm2_region[i].addr, buf, num_uint32);
+            } else {
+                // We found the right region, but it doesn't have a read() function.
+                return -1;
+            }
+        }
+    }
+
+    // We didn't find the right region.
     return -1;
 }
 
@@ -88,6 +103,21 @@ int hm2_fw_read(uint16_t addr, uint32_t * buf, size_t num_uint32) {
 // Returns 0 on success.
 
 int hm2_fw_write(uint16_t addr, uint32_t const * buf, size_t num_uint32) {
+    for (size_t i = 0; i < hm2_num_regions; ++i) {
+        if (
+            (addr >= hm2_region[i].addr)
+            && ((addr + (num_uint32 * 4)) < (hm2_region[i].addr + hm2_region[i].size))
+        ) {
+            if (hm2_region[i].write != NULL) {
+                return hm2_region[i].write(addr - hm2_region[i].addr, buf, num_uint32);
+            } else {
+                // We found the right region, but it doesn't have a read() function.
+                return -1;
+            }
+        }
+    }
+
+    // We didn't find the right region.
     return -1;
 }
 
