@@ -72,20 +72,24 @@ static uint32_t * reg;
 static uint32_t lines_available[2] = { 0x0040ffff, 0x0000001c };
 
 
-static void ioport_update(void) {
-    uint32_t in_values = gpio_get_all();
-    reg[0] = in_values & lines_available[0];
-    reg[1] = (in_values >> 24) & lines_available[1];
-}
-
-
 static int ioport_write(uint16_t addr, uint32_t const * buf, size_t num_uint32) {
+    // printf("%s: addr=0x%04x, num_uint32=%u\n", __FUNCTION__, addr, num_uint32);
+    // log_uint32(buf, num_uint32);
     return -1;
 }
 
 
 static int ioport_read(uint16_t addr, uint32_t * buf, size_t num_uint32) {
-    return -1;
+    uint32_t in_values = gpio_get_all();
+    uint32_t p[2];
+    p[0] = in_values & lines_available[0];
+    p[1] = (in_values >> 24) & lines_available[1];
+
+    for (size_t i = 0; i < num_uint32; ++i) {
+        buf[i] = p[i];
+    }
+
+    return 0;
 }
 
 
@@ -103,7 +107,7 @@ int ioport_init(void) {
         }
     }
 
-    reg = (uint32_t *)hm2_fw_register("ioport", 0x1000, 0x500, ioport_update, ioport_write, ioport_read);
+    reg = (uint32_t *)hm2_fw_register("ioport", 0x1000, 0x500, NULL, ioport_write, ioport_read);
     if (reg == NULL) {
         return -1;
     }
