@@ -48,21 +48,16 @@ int idrom_init(void) {
     // ("HOSTMOT2"), at 0x0100.
     //
 
-    uint8_t * id_reg = hm2_fw_register("id", 0x0100, 16, NULL, NULL, NULL);
-    if (id_reg == NULL) {
-        return -1;
-    }
-
-    ((uint32_t*)id_reg)[0] = 0x55aacafe;
-    id_reg[4]  = 'H';
-    id_reg[5]  = 'O';
-    id_reg[6]  = 'S';
-    id_reg[7]  = 'T';
-    id_reg[8]  = 'M';
-    id_reg[9]  = 'O';
-    id_reg[10] = 'T';
-    id_reg[11] = '2';
-    ((uint32_t*)id_reg)[3] = 0x0400;
+    *(uint32_t*)(&hm2_register_file[0x0100]) = 0x55aacafe;
+    hm2_register_file[0x0104] = 'H';
+    hm2_register_file[0x0105] = 'O';
+    hm2_register_file[0x0106] = 'S';
+    hm2_register_file[0x0107] = 'T';
+    hm2_register_file[0x0108] = 'M';
+    hm2_register_file[0x0109] = 'O';
+    hm2_register_file[0x010a] = 'T';
+    hm2_register_file[0x010b] = '2';
+    *(uint32_t*)(&hm2_register_file[0x010c]) = 0x0400;
 
 
     //
@@ -70,36 +65,31 @@ int idrom_init(void) {
     // and pointers to the Module Descriptors and Pin Descriptors.
     //
 
-    uint8_t * idrom_reg = hm2_fw_register("idrom", 0x0400, 0x40, NULL, NULL, NULL);
-    if (idrom_reg == NULL) {
-        return -1;
-    }
+    *(uint32_t*)(&hm2_register_file[0x0400]) = 2;        // IDROM type
+    *(uint32_t*)(&hm2_register_file[0x0404]) = 0x0040;   // offset to Module Descriptors
+    *(uint32_t*)(&hm2_register_file[0x0408]) = 0x0200;   // offset to Pin Descriptors
 
-    ((uint32_t*)idrom_reg)[0] = 2;     // IDROM type
-    ((uint32_t*)idrom_reg)[1] = 0x0040;   // offset to Module Descriptors
-    ((uint32_t*)idrom_reg)[2] = 0x0200;   // offset to Pin Descriptors
+    hm2_register_file[0x040c] = '*';
+    hm2_register_file[0x040d] = 'R';
+    hm2_register_file[0x040e] = 'P';
+    hm2_register_file[0x040f] = '2';
 
-    idrom_reg[12] = '*';
-    idrom_reg[13] = 'R';
-    idrom_reg[14] = 'P';
-    idrom_reg[15] = '2';
+    hm2_register_file[0x0410] = '0';
+    hm2_register_file[0x0411] = '4';
+    hm2_register_file[0x0412] = '0';
+    hm2_register_file[0x0413] = '*';
 
-    idrom_reg[16] = '0';
-    idrom_reg[17] = '4';
-    idrom_reg[18] = '0';
-    idrom_reg[19] = '*';
-
-    ((uint32_t*)idrom_reg)[5] = 0;   // size of the "fpga"
-    ((uint32_t*)idrom_reg)[6] = 56;  // number of pins on the "fpga"
-    ((uint32_t*)idrom_reg)[7] = 1;   // number of ioports
-    ((uint32_t*)idrom_reg)[8] = 20;  // total number of pins
-    ((uint32_t*)idrom_reg)[9] = 20;  // number of pins per ioport
-    ((uint32_t*)idrom_reg)[10] = 10*1000*1000;  // ClockLow
-    ((uint32_t*)idrom_reg)[11] = 20*1000*1000;  // ClockHigh
-    ((uint32_t*)idrom_reg)[12] = 4;    // Instance Stride 0
-    ((uint32_t*)idrom_reg)[13] = 64;   // Instance Stride 1
-    ((uint32_t*)idrom_reg)[14] = 256;  // Register Stride 0
-    ((uint32_t*)idrom_reg)[15] = 256;  // Register Stride 1
+    *(uint32_t*)(&hm2_register_file[0x0414]) = 0;   // size of the "fpga"
+    *(uint32_t*)(&hm2_register_file[0x0418]) = 56;  // number of pins on the "fpga"
+    *(uint32_t*)(&hm2_register_file[0x041c]) = 1;   // number of ioports
+    *(uint32_t*)(&hm2_register_file[0x0420]) = 20;  // total number of pins
+    *(uint32_t*)(&hm2_register_file[0x0424]) = 20;  // number of pins per ioport
+    *(uint32_t*)(&hm2_register_file[0x0428]) = 10*1000*1000;  // ClockLow
+    *(uint32_t*)(&hm2_register_file[0x042c]) = 20*1000*1000;  // ClockHigh
+    *(uint32_t*)(&hm2_register_file[0x0430]) = 4;    // Instance Stride 0
+    *(uint32_t*)(&hm2_register_file[0x0434]) = 64;   // Instance Stride 1
+    *(uint32_t*)(&hm2_register_file[0x0438]) = 256;  // Register Stride 0
+    *(uint32_t*)(&hm2_register_file[0x043c]) = 256;  // Register Stride 1
 
 
     //
@@ -143,29 +133,23 @@ int idrom_init(void) {
     //     RR == 1 for RegisterStride1
     //
 
+    hm2_register_file[0x0440] = HM2_GTAG_IOPORT;  // gtag
+    hm2_register_file[0x0441] = 0;                // version
+    hm2_register_file[0x0442] = 1;                // which clock to use
+    hm2_register_file[0x0443] = 1;                // number of instances
 
-    uint8_t * md_reg = hm2_fw_register("module-descriptors", 0x0440, 0x40, NULL, NULL, NULL);
-    if (md_reg == NULL) {
-        return -1;
-    }
+    hm2_register_file[0x0444] = 0x00;             // base address
+    hm2_register_file[0x0445] = 0x10;             //
 
-    md_reg[0] = HM2_GTAG_IOPORT;  // gtag
-    md_reg[1] = 0;                // version
-    md_reg[2] = 1;                // which clock to use
-    md_reg[3] = 1;                // number of instances
+    hm2_register_file[0x0446] = 5;                // number of registers
+    hm2_register_file[0x0447] = 0x00;             // use InstanceStride0 (4) and RegisterStride0 (256)
 
-    md_reg[4] = 0x00;             // base address
-    md_reg[5] = 0x10;             //
+    hm2_register_file[0x0448] = 0x1f;             // bitmap of which registers are per-channel
+    hm2_register_file[0x0449] = 0x00;             //
+    hm2_register_file[0x044a] = 0x00;             //
+    hm2_register_file[0x044b] = 0x00;             //
 
-    md_reg[6] = 5;                // number of registers
-    md_reg[7] = 0x00;             // use InstanceStride0 (4) and RegisterStride0 (256)
-
-    md_reg[8] = 0x1f;             // bitmap of which registers are per-channel
-    md_reg[9] = 0x00;             //
-    md_reg[10] = 0x00;            //
-    md_reg[11] = 0x00;            //
-
-    md_reg[12] = HM2_GTAG_END;    // gtag
+    hm2_register_file[0x044c] = HM2_GTAG_END;     // gtag
 
 
     //
@@ -204,31 +188,28 @@ int idrom_init(void) {
 
 #define PIN_DESCRIPTOR(secondary_pin, secondary_tag, secondary_unit, primary_tag) (uint32_t)((primary_tag << 24) | (secondary_unit << 16) | (secondary_tag << 8) | (secondary_pin))
 
-    uint8_t * pd_reg = hm2_fw_register("pin-descriptors", 0x0600, 0x40, NULL, NULL, NULL);
-    if (pd_reg == NULL) {
-        return -1;
-    }
+    uint32_t * pd_reg = (uint32_t *)&hm2_register_file[0x0600];
 
-    ((uint32_t *)pd_reg)[0] =  PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x00, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[1] =  PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x00, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[2] =  PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x01, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[3] =  PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x01, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[4] =  PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x02, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[5] =  PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x02, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[6] =  PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x03, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[7] =  PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x03, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[8] =  PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x04, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[9] =  PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x04, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[10] = PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x05, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[11] = PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x05, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[12] = PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x06, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[13] = PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x06, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[14] = PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x07, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[15] = PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x07, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[16] = PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x08, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[17] = PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x08, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[18] = PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x09, HM2_GTAG_IOPORT);
-    ((uint32_t *)pd_reg)[19] = PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x09, HM2_GTAG_IOPORT);
+    pd_reg[0] =  PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x00, HM2_GTAG_IOPORT);
+    pd_reg[1] =  PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x00, HM2_GTAG_IOPORT);
+    pd_reg[2] =  PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x01, HM2_GTAG_IOPORT);
+    pd_reg[3] =  PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x01, HM2_GTAG_IOPORT);
+    pd_reg[4] =  PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x02, HM2_GTAG_IOPORT);
+    pd_reg[5] =  PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x02, HM2_GTAG_IOPORT);
+    pd_reg[6] =  PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x03, HM2_GTAG_IOPORT);
+    pd_reg[7] =  PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x03, HM2_GTAG_IOPORT);
+    pd_reg[8] =  PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x04, HM2_GTAG_IOPORT);
+    pd_reg[9] =  PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x04, HM2_GTAG_IOPORT);
+    pd_reg[10] = PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x05, HM2_GTAG_IOPORT);
+    pd_reg[11] = PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x05, HM2_GTAG_IOPORT);
+    pd_reg[12] = PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x06, HM2_GTAG_IOPORT);
+    pd_reg[13] = PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x06, HM2_GTAG_IOPORT);
+    pd_reg[14] = PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x07, HM2_GTAG_IOPORT);
+    pd_reg[15] = PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x07, HM2_GTAG_IOPORT);
+    pd_reg[16] = PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x08, HM2_GTAG_IOPORT);
+    pd_reg[17] = PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x08, HM2_GTAG_IOPORT);
+    pd_reg[18] = PIN_DESCRIPTOR(0x81, HM2_GTAG_STEPGEN, 0x09, HM2_GTAG_IOPORT);
+    pd_reg[19] = PIN_DESCRIPTOR(0x82, HM2_GTAG_STEPGEN, 0x09, HM2_GTAG_IOPORT);
 
 
     return 0;
