@@ -11,6 +11,34 @@ uint8_t hm2_register_file[1<<16];
 uint32_t * hm2_register_file32 = (uint32_t *)hm2_register_file;
 
 
+void hm2_fw_log_uint8(uint8_t const * const data, size_t num_uint8) {
+    size_t i;
+    for (i = 0; i < num_uint8; ++i) {
+        printf("0x%02x ", data[i]);
+        if (i % 8 == 7) {
+            printf("\n");
+        }
+    }
+    if (i % 8 != 7) {
+        printf("\n");
+    }
+}
+
+
+void hm2_fw_log_uint32(uint32_t const * const data, size_t num_uint32) {
+    size_t i;
+    for (i = 0; i < num_uint32; ++i) {
+        printf("0x%08x ", data[i]);
+        if (i % 8 == 7) {
+            printf("\n");
+        }
+    }
+    if (i % 8 != 7) {
+        printf("\n");
+    }
+}
+
+
 uint8_t * hm2_fw_register(
     char const * name,
     uint16_t addr,

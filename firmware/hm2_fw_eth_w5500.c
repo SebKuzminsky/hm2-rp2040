@@ -339,20 +339,6 @@ static void set_clock_khz(void) {
 }
 
 
-static void log_bytes(uint8_t const * const data, size_t num_bytes) {
-    size_t i;
-    for (i = 0; i < num_bytes; ++i) {
-        printf("0x%02x ", data[i]);
-        if (i % 8 == 7) {
-            printf("\n");
-        }
-    }
-    if (i % 8 != 7) {
-        printf("\n");
-    }
-}
-
-
 static int handle_info_area_access(
     lbp16_cmd_t const * const cmd,
     uint16_t addr,
@@ -491,7 +477,7 @@ static void handle_udp(uint8_t const * packet, size_t size, uint8_t reply_addr[4
     size_t reply_packet_offset = 0;
 
 #if DEBUG_COMM
-    log_bytes(packet, size);
+    hm2_fw_log_uint8(packet, size);
 #endif
 
     ++memory_space_6[MS6_RX_UDP_COUNT];

@@ -60,4 +60,8 @@ int led_init(void);
 void led_blink(uint8_t const num_blinks, uint16_t const ms_delay);
 
 
+void hm2_fw_log_uint8(uint8_t const * const data, size_t num_uint8);
+void hm2_fw_log_uint32(uint32_t const * const data, size_t num_uint32);
+
+
 #endif // HM2_FW_H
