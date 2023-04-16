@@ -383,6 +383,15 @@ static int handle_info_area_access(
 }
 
 
+// Handle an LBP16 command.
+//
+// Write commands copy bytes from `data` (from the user) to the local
+// destination specified by `cmd`.  Returns 0.
+//
+// Read commands copy bytes from the local source specified by `cmd`
+// to the `reply_packet` which will be sent to the user.  Returns the
+// number of bytes written to `reply_packet`.
+
 static int handle_lbp16(
     lbp16_cmd_t const * const cmd,
     uint8_t const * data,
