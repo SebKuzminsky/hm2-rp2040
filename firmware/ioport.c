@@ -79,11 +79,13 @@ static void ioport_update(void) {
 }
 
 
-static void ioport_write(uint16_t addr, uint32_t val) {
+static int ioport_write(uint16_t addr, uint32_t const * buf, size_t num_uint32) {
+    return -1;
 }
 
 
-static uint32_t ioport_read(uint16_t addr) {
+static int ioport_read(uint16_t addr, uint32_t * buf, size_t num_uint32) {
+    return -1;
 }
 
 

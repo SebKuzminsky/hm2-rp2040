@@ -16,8 +16,8 @@ uint8_t * hm2_fw_register(
     uint16_t addr,
     size_t size,
     void (*module_update)(void),
-    void (*module_write)(uint16_t addr, uint32_t val),
-    uint32_t (*module_read)(uint16_t addr)
+    int (*module_write)(uint16_t addr, uint32_t const * buf, size_t num_uint32),
+    int (*module_read)(uint16_t addr, uint32_t * buf, size_t num_uint32)
 ) {
     // Register a handler for a region of the address space.
     if (hm2_num_regions >= HM2_MAX_REGIONS) {
@@ -37,6 +37,30 @@ uint8_t * hm2_fw_register(
     ++hm2_num_regions;
 
     return &hm2_register_file[addr];
+}
+
+
+// Read `num_uint32` uint32_t values from `addr` into `buf`.
+//
+// Returns -1 on failure (caller should read directly from the hm2
+// register file memory).
+//
+// Returns 0 on success.
+
+int hm2_fw_read(uint16_t addr, uint32_t * buf, size_t num_uint32) {
+    return -1;
+}
+
+
+// Write `num_uint32` uint32_t values from `buf` into `addr`.
+//
+// Returns -1 on failure (caller should write directly to the hm2 register
+// file memory).
+//
+// Returns 0 on success.
+
+int hm2_fw_write(uint16_t addr, uint32_t const * buf, size_t num_uint32) {
+    return -1;
 }
 
 

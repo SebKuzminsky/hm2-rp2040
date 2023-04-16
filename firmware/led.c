@@ -14,11 +14,13 @@ static void led_update(void) {
 }
 
 
-static void led_write(uint16_t addr, uint32_t val) {
+static int led_write(uint16_t addr, uint32_t const * buf, size_t num_uint32) {
+    return -1;
 }
 
 
-static uint32_t led_read(uint16_t addr) {
+static int led_read(uint16_t addr, uint32_t * buf, size_t num_uint32) {
+    return -1;
 }
 
 
