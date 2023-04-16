@@ -420,6 +420,10 @@ static int handle_lbp16(
 
         switch (cmd->memory_space) {
             case 0:
+                int r = hm2_fw_write(addr, (uint32_t*)data, cmd->num_bytes/4);
+                if (r >= 0) {
+                    return 0;
+                }
                 dest = hm2_register_file;
                 break;
             case 4:
@@ -441,6 +445,10 @@ static int handle_lbp16(
 
         switch (cmd->memory_space) {
             case 0:
+                int r = hm2_fw_read(addr, (uint32_t*)reply_packet, cmd->num_bytes/4);
+                if (r >= 0) {
+                    return cmd->num_bytes;
+                }
                 src = hm2_register_file;
                 break;
             case 2:
