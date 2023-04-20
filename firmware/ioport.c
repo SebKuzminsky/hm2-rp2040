@@ -71,25 +71,97 @@ static uint32_t * reg;
 //
 static uint32_t lines_available[2] = { 0x0040ffff, 0x0000001c };
 
+// Data direction register.
+static uint32_t ddr[2] = { 0, 0 };
+
+// Output value register.
+static uint32_t output_val[2] = { 0, 0 };
+
+
+// Set GPIO directions based on ddr.
+static void update_ddr(void) {
+    for (size_t i = 0; i < 29; ++i) {
+        int instance = i / 24;
+        int num_in_instance = i % 24;
+
+        if (lines_available[instance] & (1 << num_in_instance)) {
+            if (ddr[instance] & (1 << num_in_instance)) {
+                printf("setting GPIO%u as output\n", i);
+                gpio_set_dir(i, GPIO_OUT);
+            } else {
+                printf("setting GPIO%u as input\n", i);
+                gpio_set_dir(i, GPIO_IN);
+            }
+        }
+    }
+}
+
+
+static void update_outputs(void) {
+    uint32_t mask;
+    uint32_t val;
+
+    mask = lines_available[0] | (lines_available[1] << 24);
+    mask &= ddr[0] | (ddr[1] << 24);
+
+    val = output_val[0] | (output_val[1] << 24);
+
+    gpio_put_masked(mask, val);
+}
+
 
 static int ioport_write(uint16_t addr, uint32_t const * buf, size_t num_uint32) {
     // printf("%s: addr=0x%04x, num_uint32=%u\n", __FUNCTION__, addr, num_uint32);
     // log_uint32(buf, num_uint32);
+
+    if (addr < 0x0100) {
+        // Write the GPIO outputs.
+        if (addr >= 2) {
+            return -1;
+        }
+        for (size_t i = 0; i < num_uint32; ++i) {
+            output_val[addr + i] = buf[i];
+        }
+        update_outputs();
+
+    } else if (addr < 0x0200) {
+        // Write the DDR (data direction) register.
+        uint16_t ddr_addr = addr - 0x0100;
+        if (ddr_addr >= 2) {
+            return -1;
+        }
+        for (size_t i = 0; i < num_uint32; ++i) {
+            ddr[ddr_addr + i] = buf[i];
+        }
+        update_ddr();
+        return 0;
+    }
+
     return -1;
 }
 
 
 static int ioport_read(uint16_t addr, uint32_t * buf, size_t num_uint32) {
-    uint32_t in_values = gpio_get_all();
-    uint32_t p[2];
-    p[0] = in_values & lines_available[0];
-    p[1] = (in_values >> 24) & lines_available[1];
+    if (addr < 0x0100) {
+        // Read GPIO inputs.
+        uint32_t in_values = gpio_get_all();
+        uint32_t p[2];
+        p[0] = in_values & lines_available[0];
+        p[1] = (in_values >> 24) & lines_available[1];
+        for (size_t i = 0; i < num_uint32; ++i) {
+            buf[i] = p[i];
+        }
+        return 0;
 
-    for (size_t i = 0; i < num_uint32; ++i) {
-        buf[i] = p[i];
+    } else if (addr < 0x0200) {
+        // Read the DDR (data direction) register.
+        for (size_t i = 0; i < num_uint32; ++i) {
+            buf[i] = ddr[i];
+        }
+        return 0;
     }
 
-    return 0;
+    return -1;
 }
 
 
