@@ -4,6 +4,19 @@ microcontroller.
 
 
 
+# Current status
+
+Connects to a slightly modified mesaflash.
+
+Connects to a slightly modified hostmot2 driver in LinuxCNC.
+
+GPIO inputs and outputs work.
+
+Nothing else is implemented yet.
+
+
+
+
 # Implementation details
 
 The RP2040 has two cores.  This firmware uses one core for host
