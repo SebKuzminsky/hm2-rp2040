@@ -86,10 +86,10 @@ static void update_ddr(void) {
 
         if (lines_available[instance] & (1 << num_in_instance)) {
             if (ddr[instance] & (1 << num_in_instance)) {
-                printf("setting GPIO%u as output\n", i);
+                // printf("setting GPIO%u as output\n", i);
                 gpio_set_dir(i, GPIO_OUT);
             } else {
-                printf("setting GPIO%u as input\n", i);
+                // printf("setting GPIO%u as input\n", i);
                 gpio_set_dir(i, GPIO_IN);
             }
         }
