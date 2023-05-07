@@ -79,15 +79,7 @@ inexpensive RP2040 Pico-like boards with Ethernet:
 $10 from Digikey:
 <https://www.digikey.com/en/products/detail/wiznet/W5500-EVB-PICO/16515824>
 
-Older Wiznet boards and the upcoming W6100-EVB-Pico may also be an option:
-<https://docs.wiznet.io/Product/iEthernet/W6100/w6100-evb-pico>
-
-$18 from Mouser: <https://www.mouser.com/ProductDetail/WIZnet/W6100-EVB-PICO?qs=amGC7iS6iy9FRNAvZsvTNg%3D%3D#>
-
-<https://github.com/WIZnet-ArduinoEthernet/Ethernet/tree/W6100-EVB-Pico>
-<https://linuxgizmos.com/wiznet-board-features-raspberry-pi-2040-and-hardwired-internet-controller-chip/>
-
-Code here: <https://github.com/Wiznet/RP2040-HAT-C>
+The upcoming W6100-EVB-Pico may also be an option.
 
 Test ethernet performance (assuming CPU 3 is your isolcpu one):
 
@@ -192,10 +184,15 @@ WCH CH569:
 
 <https://www.raspberrypi.com/documentation/microcontrollers/rp2040.html>
 
+Debug probe may be
+useful? <https://www.raspberrypi.com/products/debug-probe/>
+
 
 ## C SDK
 
 <https://www.raspberrypi.com/documentation/microcontrollers/c_sdk.html>
+
+SDK: <https://github.com/raspberrypi/pico-sdk>
 
 Examples here: <https://github.com/raspberrypi/pico-examples/>
 
@@ -279,3 +276,18 @@ Good ping times on Buster, terrible on Bookworm:
     1000000 packets transmitted, 1000000 received, 0% packet loss, time 1998ms
     rtt min/avg/max/mdev = 0.041/0.043/0.088/0.003 ms
 
+
+## Wiznet W6100 EVB-Pico
+
+Not implemented yet!  Doesn't work with W5500 code.
+
+<https://docs.wiznet.io/Product/iEthernet/W6100/w6100-evb-pico>
+
+$18 from Mouser: <https://www.mouser.com/ProductDetail/WIZnet/W6100-EVB-PICO?qs=amGC7iS6iy9FRNAvZsvTNg%3D%3D#>
+
+Needs this library instead of ioLibrary_Driver like the W5500 uses:
+
+    <https://github.com/Wiznet/io6Library>
+
+<https://github.com/WIZnet-ArduinoEthernet/Ethernet/tree/W6100-EVB-Pico>
+<https://linuxgizmos.com/wiznet-board-features-raspberry-pi-2040-and-hardwired-internet-controller-chip/>
