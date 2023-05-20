@@ -58,6 +58,7 @@
 
 static uint32_t * reg;
 
+
 //
 // A "1" bit indicates the corresponding GPIO line is available, "0"
 // indicates it's not.
@@ -69,9 +70,17 @@ static uint32_t * reg;
 // GPIO 00-23: 0000 0000  0100 0000  1111 1111  1111 1111
 // GPIO 24-29: 0000 0000  0000 0000  0000 0000  0001 1100
 //
+
 static uint32_t lines_available[2] = { 0x0040ffff, 0x0000001c };
 
+
+//
 // Data direction register.
+//
+// A "1" bit indicates the corresponding GPIO line is an output, "0"
+// indicates it's an input.
+//
+
 static uint32_t ddr[2] = { 0, 0 };
 
 // Output value register.
@@ -86,10 +95,8 @@ static void update_ddr(void) {
 
         if (lines_available[instance] & (1 << num_in_instance)) {
             if (ddr[instance] & (1 << num_in_instance)) {
-                // printf("setting GPIO%u as output\n", i);
                 gpio_set_dir(i, GPIO_OUT);
             } else {
-                // printf("setting GPIO%u as input\n", i);
                 gpio_set_dir(i, GPIO_IN);
             }
         }
