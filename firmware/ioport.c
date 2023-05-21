@@ -181,10 +181,11 @@ int ioport_init(void) {
             printf("initializing GPIO%d for input, pulled down\n", i);
             gpio_init(i);
             gpio_set_function(i, GPIO_FUNC_SIO);
-            gpio_set_dir(i, GPIO_IN);
             gpio_pull_down(i);
         }
     }
+
+    update_ddr();
 
     reg = (uint32_t *)hm2_fw_register("ioport", 0x1000, 0x500, NULL, ioport_write, ioport_read);
     if (reg == NULL) {
