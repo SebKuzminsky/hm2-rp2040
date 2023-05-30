@@ -521,9 +521,13 @@ static void handle_udp(uint8_t const * packet, size_t size, uint8_t reply_addr[4
         size -= bytes_needed;
     }
 
+    gpio_put(0, false);
+
     if (reply_packet_offset > 0) {
+        gpio_put(1, true);
         int32_t r = sendto(0, reply_packet, reply_packet_offset, reply_addr, reply_port);
         ++memory_space_6[MS6_TX_UDP_COUNT];
+        gpio_put(1, false);
     }
 }
 
@@ -567,6 +571,9 @@ int main() {
         uint16_t port;
 
         int32_t r = recvfrom(0, packet, sizeof(packet), addr, &port);
+
+        gpio_put(0, true);
+
 #if DEBUG_COMM
         printf("recvfrom %d (addr=%u.%u.%u.%u, port=%u)\n", r, addr[0], addr[1], addr[2], addr[3], port);
 #endif

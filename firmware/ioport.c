@@ -81,7 +81,7 @@ static uint32_t lines_available[2] = { 0x0040ffff, 0x0000001c };
 // indicates it's an input.
 //
 
-static uint32_t ddr[2] = { 0, 0 };
+static uint32_t ddr[2] = { 3, 0 };
 
 // Output value register.
 static uint32_t output_val[2] = { 0, 0 };
